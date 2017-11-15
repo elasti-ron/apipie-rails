@@ -130,6 +130,32 @@ describe Apipie::ApipiesController do
     end
   end
 
+  describe "GET index as swagger" do
+    it "outputs swagger when format is json and type is swagger" do
+      get :index, :params => { :format => "json", :type => "swagger"}
+
+      assert_response :success
+      expect(response.body).to match(/"swagger":"2.0"/)
+    end
+
+    it "does not output swagger when format is not json even if type is swagger" do
+      get :index, :params => { :type => "swagger"}
+
+      assert_response :success
+      print response.body
+      expect(response.body).not_to match(/"swagger":"2.0"/)
+    end
+
+    it "does not output swagger when format is json even but type is not swagger" do
+      get :index, :params => { :format => "json"}
+
+      assert_response :success
+      print response.body
+      expect(response.body).not_to match(/"swagger":"2.0"/)
+    end
+  end
+
+
   describe "authenticate user" do
     it "authenticate user if an authentication method is setted" do
       test = false
@@ -183,6 +209,11 @@ describe Apipie::ApipiesController do
       expect(assigns(:doc)[:resources]["users"][:methods].size).to eq(users_methods - 1)
       expect(assigns(:doc)[:resources]["twitter_example"][:methods].size).to eq(twitter_example_methods)
     end
+    it "does not allow access to swagger when authorization is set" do
+      get :index, :params => { :format => "json", :type => "swagger"}
+
+      assert_response :forbidden
+    end
   end
 
   describe "documentation cache" do
@@ -230,4 +261,6 @@ describe Apipie::ApipiesController do
     end
 
   end
+
+
 end
