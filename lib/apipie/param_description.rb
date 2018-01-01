@@ -8,8 +8,10 @@ module Apipie
   # validator - Validator::BaseValidator subclass
   class ParamDescription
 
-    attr_reader :method_description, :name, :desc, :allow_nil, :allow_blank, :validator, :options, :metadata, :show, :as, :validations
+    attr_reader :method_description, :name, :desc, :allow_nil, :allow_blank, :validator, :options, :metadata, :show, :as, :validations, :response_only
     attr_accessor :parent, :required
+
+    alias_method :response_only?, :response_only
 
     def self.from_dsl_data(method_description, args)
       param_name, validator, desc_or_options, options, block = args
@@ -61,6 +63,9 @@ module Apipie
       @metadata = @options[:meta]
 
       @required = is_required?
+
+      @response_only = (@options[:only_in] == :response)
+      raise ArgumentError.new("'#{@options[:only_in]}' is not a valid value for :only_in") if !@response_only && @options[:only_in].present?
 
       @show = if @options.has_key? :show
         @options[:show]

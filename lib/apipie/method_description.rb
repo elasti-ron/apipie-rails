@@ -5,7 +5,7 @@ module Apipie
 
     class Api
 
-      attr_accessor :short_description, :path, :http_method, :from_routes, :options
+      attr_accessor :short_description, :path, :http_method, :from_routes, :options, :returns
 
       def initialize(method, path, desc, options)
         @http_method = method.to_s
@@ -17,7 +17,7 @@ module Apipie
 
     end
 
-    attr_reader :full_description, :method, :resource, :apis, :examples, :see, :formats, :metadata, :headers, :show
+    attr_reader :full_description, :method, :resource, :apis, :examples, :see, :formats, :metadata, :headers, :show, :returns
 
     def initialize(method, resource, dsl_data)
       @method = method.to_s
@@ -34,6 +34,10 @@ module Apipie
         Apipie::ErrorDescription.from_dsl_data(args)
       end
 
+      @returns = dsl_data[:returns].map do |code,entry|
+        Apipie::ResponseDescription.from_dsl_data(self, code, entry[:returns_args], entry[:properties_dsl_data])
+      end
+
       @see = dsl_data[:see].map do |args|
         Apipie::SeeDescription.new(args)
       end
@@ -44,9 +48,10 @@ module Apipie
 
       @metadata = dsl_data[:meta]
 
-      @params_ordered = dsl_data[:params].map do |args|
+      @params_ordered = dsl_data[:params].map { |args|
         Apipie::ParamDescription.from_dsl_data(self, args)
-      end
+      }.reject{|p| p.response_only? }
+
       @params_ordered = ParamDescription.unify(@params_ordered)
       @headers = dsl_data[:headers]
 

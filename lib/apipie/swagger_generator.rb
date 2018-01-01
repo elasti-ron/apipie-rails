@@ -305,6 +305,17 @@ module Apipie
         result[error.code] = error_block
       end
 
+      for response in method.returns
+        schema = json_schema_obj_from_params_array(response.params_ordered)
+
+        swagger_response_block = {
+          description: response.description
+        }
+        swagger_response_block[:schema] = schema if schema
+
+        result[response.code] = swagger_response_block
+      end
+
       if result.length == 0
         warn_no_return_codes_specified
         result[200] = {description: 'ok'}
@@ -426,8 +437,8 @@ module Apipie
       schema_obj = json_schema_obj_from_params_array(params_array)
       return nil if schema_obj.nil?
 
-      @definitions[name] = schema_obj
-      ref_to(name)
+      @definitions[name.to_sym] = schema_obj
+      ref_to(name.to_sym)
     end
 
     def json_schema_param_defs_from_params_array(params_array)
@@ -443,15 +454,15 @@ module Apipie
           raise ("unexpected param_desc format")
         end
 
-        required_params.push(param_desc.name) if param_desc.required
+        required_params.push(param_desc.name.to_sym) if param_desc.required
 
         param_type = swagger_param_type(param_desc)
 
         if param_type == "object" && param_desc.validator.params_ordered
           schema = json_schema_obj_from_params_array(param_desc.validator.params_ordered)
-          param_defs[param_desc.name] = schema if !schema.nil?
+          param_defs[param_desc.name.to_sym] = schema if !schema.nil?
         else
-          param_defs[param_desc.name] = swagger_atomic_param(param_desc, true)
+          param_defs[param_desc.name.to_sym] = swagger_atomic_param(param_desc, true)
         end
       end
 
