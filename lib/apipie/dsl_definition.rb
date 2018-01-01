@@ -2,7 +2,7 @@
 
 module Apipie
 
-  # DSL is a module that provides #api, #error, #param, #error.
+  # DSL is a module that provides #api, #error, #param, #returns.
   module DSL
 
     module Base
@@ -32,9 +32,10 @@ module Apipie
          :api_args          => [],
          :api_from_routes   => nil,
          :errors            => [],
+         :responses         => [],
          :params            => [],
          :headers           => [],
-         :resource_id        => nil,
+         :resource_id       => nil,
          :short_description => nil,
          :description       => nil,
          :examples          => [],
@@ -221,6 +222,59 @@ module Apipie
         _apipie_dsl_data[:errors] << [code_or_options, desc, options]
       end
 
+      # Describe possible responses
+      #
+      # Example:
+      #     def_param_group :user do
+      #       param :user, Hash do
+      #         param :name, String
+      #       end
+      #     end
+      #
+      #   returns :user, :desc => "the speaker", :code => 200
+      #   returns :array_of => :user, "many speakers"
+      #   returns :user, "the speaker"
+      #   returns :param_group => :user, "the speaker"
+      #   def hello_world
+      #     render json: {user: {name: "Alfred"}}
+      #   end
+      #
+      def returns(type_or_options, desc=nil, options={}) #:doc:
+        return unless Apipie.active_dsl?
+        _apipie_dsl_data[:responses] << [type_or_options, desc, options, _default_param_group_scope]
+      end
+
+      def old_returns(type_or_options, desc=nil, options={}) #:doc:
+        if type_or_options.is_a? Hash
+          options.merge!(type_or_options)
+          returned_type = options[:type]
+        else
+          returned_type = type_or_options
+        end
+
+        array_of = options[:array_of] || false
+        desc ||= options[:desc]
+        scope = options[:scope] || _default_param_group_scope
+
+        if returned_type.is_a? Symbol
+          name = returned_type
+
+          @_current_param_group = {
+              :scope => scope,
+              :name => name,
+              :options => options,
+              :from_concern => scope.apipie_concern?
+          }
+          returned_type = self.instance_exec(&Apipie.get_param_group(scope, name))
+        end
+
+        _apipie_dsl_data[:responses] << [type_or_options, desc, options, returned_type]
+      ensure
+        @_current_param_group = nil
+      end
+
+
+
       def _apipie_define_validators(description)
 
         # [re]define method only if validation is turned on
@@ -308,6 +362,7 @@ module Apipie
         }
       end
     end
+
 
     # this describes the params, it's in separate module because it's
     # used in Validators as well

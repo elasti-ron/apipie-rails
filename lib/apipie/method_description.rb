@@ -5,7 +5,7 @@ module Apipie
 
     class Api
 
-      attr_accessor :short_description, :path, :http_method, :from_routes, :options
+      attr_accessor :short_description, :path, :http_method, :from_routes, :options, :responses
 
       def initialize(method, path, desc, options)
         @http_method = method.to_s
@@ -17,7 +17,7 @@ module Apipie
 
     end
 
-    attr_reader :full_description, :method, :resource, :apis, :examples, :see, :formats, :metadata, :headers, :show
+    attr_reader :full_description, :method, :resource, :apis, :examples, :see, :formats, :metadata, :headers, :show, :responses
 
     def initialize(method, resource, dsl_data)
       @method = method.to_s
@@ -32,6 +32,10 @@ module Apipie
 
       @errors = dsl_data[:errors].map do |args|
         Apipie::ErrorDescription.from_dsl_data(args)
+      end
+
+      @responses = dsl_data[:responses].map do |args|
+        Apipie::ResponseDescription.from_dsl_data(self, args)
       end
 
       @see = dsl_data[:see].map do |args|

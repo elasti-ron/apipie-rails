@@ -9,6 +9,12 @@ module Apipie
   class UnknownCode < Error
   end
 
+  class ReturnsMultipleDefinitionError < Error
+    def to_s
+      "a 'returns' statement cannot indicate both array_of and type"
+    end
+  end
+
   # abstract
   class DefinedParamError < ParamError
     attr_accessor :param

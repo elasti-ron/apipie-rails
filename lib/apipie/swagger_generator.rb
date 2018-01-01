@@ -305,6 +305,14 @@ module Apipie
         result[error.code] = error_block
       end
 
+      for response in method.responses
+        if result[200]
+          result[200] << response
+        else
+          result[200] = [response]
+        end
+      end
+
       if result.length == 0
         warn_no_return_codes_specified
         result[200] = {description: 'ok'}
