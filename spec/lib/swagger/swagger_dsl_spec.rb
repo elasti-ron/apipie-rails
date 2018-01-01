@@ -31,12 +31,10 @@ describe PetsController do
 
       expect(response_obj.params_ordered[0].name).to eq(:pet)
       expect(response_obj.params_ordered[1].name).to eq(:superpower)
-      expect(response_obj.params_ordered[0].type).to eq(:object)
+      expect(response_obj.params_ordered[0].validator.class).to eq(Apipie::Validator::HashValidator)
+      expect(response_obj.params_ordered[0].validator.params_ordered[0].name).to eq(:name)
+      expect(response_obj.params_ordered[0].validator.params_ordered[1].name).to eq(:animal)
 
-      expect(response_obj.to_json).to eq({code: 200, description: nil, returns_object: [
-          {:name=>"name", :full_name=>"returns[name]", :description=>"\n<p>Name of pet</p>\n", :required=>true, :allow_nil=>false, :allow_blank=>false, :validator=>"Must be a String", :expected_type=>"string", :metadata=>nil, :show=>true},
-          {:name=>"animal", :full_name=>"returns[animal]", :description=>"\n<p>Type of pet</p>\n", :required=>true, :allow_nil=>false, :allow_blank=>false, :validator=>"Must be a String", :expected_type=>"string", :metadata=>nil, :show=>true}
-      ]})
     end
 
   end
