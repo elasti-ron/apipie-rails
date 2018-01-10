@@ -10,7 +10,8 @@ module Apipie
       @param_group = {scope: scope}
 
       self.instance_exec(&block)
-      puts _apipie_dsl_data
+
+      prepare_hash_params
     end
 
     def params_ordered
@@ -21,6 +22,13 @@ module Apipie
         Apipie::ParamDescription.from_dsl_data(@method_description, args)
       end
     end
+
+    def prepare_hash_params
+      @hash_params = params_ordered.reduce({}) do |h, param|
+        h.update(param.name.to_sym => param)
+      end
+    end
+
   end
 
 

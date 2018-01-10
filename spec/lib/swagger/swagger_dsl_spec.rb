@@ -29,14 +29,13 @@ describe PetsController do
       returns_obj = subject.returns.detect{|e| e.code == 201 }
 
       puts returns_obj
-      expect(returns_obj.code).not_to be_nil
+      expect(returns_obj.code).to eq(201)
 
-      expect(returns_obj.params_ordered[0].name).to eq(:pet)
-      expect(returns_obj.params_ordered[1].name).to eq(:superpower)
+      expect(returns_obj.params_ordered[0].name).to eq(:super_pet_inner_hash)
       expect(returns_obj.params_ordered[0].validator.class).to eq(Apipie::Validator::HashValidator)
-      expect(returns_obj.params_ordered[0].validator.params_ordered[0].name).to eq(:name)
-      expect(returns_obj.params_ordered[0].validator.params_ordered[1].name).to eq(:animal)
-
+      expect(returns_obj.params_ordered[0].validator.params_ordered[0].name).to eq(:pet_inner_hash)
+      expect(returns_obj.params_ordered[0].validator.params_ordered[0].validator.params_ordered[0].name).to eq(:name)
+      expect(returns_obj.params_ordered[0].validator.params_ordered[0].validator.params_ordered[1].name).to eq(:animal)
     end
 
   end

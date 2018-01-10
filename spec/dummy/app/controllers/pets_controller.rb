@@ -1,10 +1,10 @@
 class PetsController < ApplicationController
 
   def_param_group :pet do
-    # param :pet_inner_hash, Hash do
+    param :pet_inner_hash, Hash do
       param :name, String, :desc => "Name of pet", :required => true
       param :animal, String, :desc => "Type of pet", :required => true
-    # end
+    end
   end
 
   def_param_group :super_pet do
