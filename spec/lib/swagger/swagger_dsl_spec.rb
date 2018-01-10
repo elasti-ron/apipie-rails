@@ -9,7 +9,7 @@ describe PetsController do
   describe "PetsController#create" do
     subject do
       desc = Apipie.get_resource_description(PetsController, Apipie.configuration.default_version)
-      desc._methods[:create]
+      desc._methods[:create_pet]
     end
 
     it "should return code 200 with a pet object" do
@@ -26,14 +26,16 @@ describe PetsController do
     end
 
     it "should return code 201 with a super_pet object" do
-      response_obj = subject.responses.detect{|e| e.code == 201 }
-      expect(response_obj.code).not_to be_nil
+      returns_obj = subject.returns.detect{|e| e.code == 201 }
 
-      expect(response_obj.params_ordered[0].name).to eq(:pet)
-      expect(response_obj.params_ordered[1].name).to eq(:superpower)
-      expect(response_obj.params_ordered[0].validator.class).to eq(Apipie::Validator::HashValidator)
-      expect(response_obj.params_ordered[0].validator.params_ordered[0].name).to eq(:name)
-      expect(response_obj.params_ordered[0].validator.params_ordered[1].name).to eq(:animal)
+      puts returns_obj
+      expect(returns_obj.code).not_to be_nil
+
+      expect(returns_obj.params_ordered[0].name).to eq(:pet)
+      expect(returns_obj.params_ordered[1].name).to eq(:superpower)
+      expect(returns_obj.params_ordered[0].validator.class).to eq(Apipie::Validator::HashValidator)
+      expect(returns_obj.params_ordered[0].validator.params_ordered[0].name).to eq(:name)
+      expect(returns_obj.params_ordered[0].validator.params_ordered[1].name).to eq(:animal)
 
     end
 

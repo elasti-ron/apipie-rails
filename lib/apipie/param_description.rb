@@ -13,6 +13,7 @@ module Apipie
 
     def self.from_dsl_data(method_description, args)
       param_name, validator, desc_or_options, options, block = args
+      __tp("ParamDescription#from_dsl_data [#{param_name}]")
       Apipie::ParamDescription.new(method_description,
                                    param_name,
                                    validator,
@@ -35,6 +36,8 @@ module Apipie
     end
 
     def initialize(method_description, name, validator, desc_or_options = nil, options = {}, &block)
+
+      __tp("ParamDescription#initialize name:[#{name}]")
 
       if desc_or_options.is_a?(Hash)
         options = options.merge(desc_or_options)
@@ -74,6 +77,7 @@ module Apipie
       action_awareness
 
       if validator
+        __tp("ParamDescription#initialize have validator. @options:[#{@options}], block:[#{block}]")
         @validator = Validator::BaseValidator.find(self, validator, @options, block)
         raise "Validator for #{validator} not found." unless @validator
       end

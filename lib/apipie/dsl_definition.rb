@@ -1,5 +1,9 @@
 # Apipie DSL functions.
 
+def __tp(str)
+  puts "tracepoint: #{str}"
+end
+
 module Apipie
 
   # DSL is a module that provides #api, #error, #param, #returns.
@@ -18,34 +22,57 @@ module Apipie
 
       private
 
+      def _in_context_of_returns(code, &block)
+        @in_context_of_returns_for_code = code
+        yield
+      ensure
+        @in_context_of_returns_for_code = nil
+      end
+
+      def _in_context_of_returns?
+        @in_context_of_returns_for_code != nil
+      end
+
       def _apipie_dsl_data
-        @_apipie_dsl_data ||= _apipie_dsl_data_init
+        if _in_context_of_returns?
+          # __tp("     _apipie_dsl_data is in_context_of_returns (self: #{self})")
+          @_apipie_dsl_data[:returns][@in_context_of_returns_for_code][:properties_dsl_data] ||= _apipie_dsl_data_init(true)
+        else
+          # __tp("     _apipie_dsl_data is regular (self: #{self})")
+          @_apipie_dsl_data ||= _apipie_dsl_data_init
+        end
       end
 
       def _apipie_dsl_data_clear
         @_apipie_dsl_data = nil
       end
 
-      def _apipie_dsl_data_init
-        @_apipie_dsl_data =  {
-         :api               => false,
-         :api_args          => [],
-         :api_from_routes   => nil,
-         :errors            => [],
-         :responses         => [],
-         :params            => [],
-         :headers           => [],
-         :resource_id       => nil,
-         :short_description => nil,
-         :description       => nil,
-         :examples          => [],
-         :see               => [],
-         :formats           => nil,
-         :api_versions      => [],
-         :meta              => nil,
-         :show              => true,
-         :deprecated        => false
-       }
+      def _apipie_dsl_data_init(only_for_returns = false)
+        v =  {
+            :api               => false,
+            :api_args          => [],
+            :api_from_routes   => nil,
+            :errors            => [],
+            :returns           => {},
+            :params            => [],
+            :headers           => [],
+            :resource_id       => nil,
+            :short_description => nil,
+            :description       => nil,
+            :examples          => [],
+            :see               => [],
+            :formats           => nil,
+            :api_versions      => [],
+            :meta              => nil,
+            :show              => true,
+            :deprecated        => false
+        }
+
+        if only_for_returns
+          v
+        else
+          @_apipie_dsl_data = v
+        end
       end
     end
 
@@ -88,6 +115,7 @@ module Apipie
     module Action
 
       def def_param_group(name, &block)
+        __tp("def_param_group: [#{name}] block:#{block}")
         Apipie.add_param_group(self, name, &block)
       end
 
@@ -222,65 +250,12 @@ module Apipie
         _apipie_dsl_data[:errors] << [code_or_options, desc, options]
       end
 
-      # Describe possible responses
-      #
-      # Example:
-      #     def_param_group :user do
-      #       param :user, Hash do
-      #         param :name, String
-      #       end
-      #     end
-      #
-      #   returns :user, :desc => "the speaker", :code => 200
-      #   returns :array_of => :user, "many speakers"
-      #   returns :user, "the speaker"
-      #   returns :param_group => :user, "the speaker"
-      #   def hello_world
-      #     render json: {user: {name: "Alfred"}}
-      #   end
-      #
-      def returns(type_or_options, desc=nil, options={}) #:doc:
-        return unless Apipie.active_dsl?
-        _apipie_dsl_data[:responses] << [type_or_options, desc, options, _default_param_group_scope]
-      end
-
-      def old_returns(type_or_options, desc=nil, options={}) #:doc:
-        if type_or_options.is_a? Hash
-          options.merge!(type_or_options)
-          returned_type = options[:type]
-        else
-          returned_type = type_or_options
-        end
-
-        array_of = options[:array_of] || false
-        desc ||= options[:desc]
-        scope = options[:scope] || _default_param_group_scope
-
-        if returned_type.is_a? Symbol
-          name = returned_type
-
-          @_current_param_group = {
-              :scope => scope,
-              :name => name,
-              :options => options,
-              :from_concern => scope.apipie_concern?
-          }
-          returned_type = self.instance_exec(&Apipie.get_param_group(scope, name))
-        end
-
-        _apipie_dsl_data[:responses] << [type_or_options, desc, options, returned_type]
-      ensure
-        @_current_param_group = nil
-      end
-
-
-
       def _apipie_define_validators(description)
 
         # [re]define method only if validation is turned on
         if description && (Apipie.configuration.validate == true ||
-                           Apipie.configuration.validate == :implicitly ||
-                           Apipie.configuration.validate == :explicitly)
+            Apipie.configuration.validate == :implicitly ||
+            Apipie.configuration.validate == :explicitly)
 
           _apipie_save_method_params(description.method, description.params)
 
@@ -356,9 +331,9 @@ module Apipie
       def header(header_name, description, options = {}) #:doc
         return unless Apipie.active_dsl?
         _apipie_dsl_data[:headers] << {
-          name: header_name,
-          description: description,
-          options: options
+            name: header_name,
+            description: description,
+            options: options
         }
       end
     end
@@ -376,6 +351,7 @@ module Apipie
       #   end
       #
       def param(param_name, validator, desc_or_options = nil, options = {}, &block) #:doc:
+        __tp("param: [#{param_name}] block:#{block} (_in_context_of_returns?: #{_in_context_of_returns?})")
         return unless Apipie.active_dsl?
         _apipie_dsl_data[:params] << [param_name,
                                       validator,
@@ -390,6 +366,7 @@ module Apipie
       # when using action_aware parmas, you can specify :as =>
       # :create or :update to explicitly say how it should behave
       def param_group(name, scope_or_options = nil, options = {})
+        __tp("param_group: [#{name}] [#{scope_or_options}]")
         if scope_or_options.is_a? Hash
           options.merge!(scope_or_options)
           scope = options[:scope]
@@ -397,16 +374,87 @@ module Apipie
           scope = scope_or_options
         end
         scope ||= _default_param_group_scope
+        __tp("   param_group->scope: #{scope}")
 
+        if scope.nil?
+          __tp("!!!! SCOPE IS NIL!!!")
+        end
         @_current_param_group = {
-          :scope => scope,
-          :name => name,
-          :options => options,
-          :from_concern => scope.apipie_concern?
+            :scope => scope,
+            :name => name,
+            :options => options,
+            :from_concern => scope.apipie_concern?
         }
         self.instance_exec(&Apipie.get_param_group(scope, name))
       ensure
         @_current_param_group = nil
+      end
+
+      # Describe possible responses
+      #
+      # Example:
+      #     def_param_group :user do
+      #       param :user, Hash do
+      #         param :name, String
+      #       end
+      #     end
+      #
+      #   returns :user, "the speaker"
+      #   returns "the speaker" do
+      #        param_group: :user
+      #   end
+      #   returns :array_of => :user, "many speakers"
+      #   returns :param_group => :user, "the speaker"
+      #   returns :user, :code => 201, :desc => "the created speaker record"
+      #   def hello_world
+      #     render json: {user: {name: "Alfred"}}
+      #   end
+      #
+      def returns(pgroup_or_options, desc_or_options=nil, options={}, &block) #:doc:
+        __tp("returns [#{pgroup_or_options}] _in_context_of_returns?:#{_in_context_of_returns?}")
+        return unless Apipie.active_dsl?
+
+
+        if desc_or_options.is_a? Hash
+          options.merge!(desc_or_options)
+        elsif !desc_or_options.nil?
+          options[:desc] = desc_or_options
+        end
+
+        if pgroup_or_options.is_a? Hash
+          options.merge!(pgroup_or_options)
+        else
+          options[:param_group] = pgroup_or_options
+        end
+
+        __tp("options: #{JSON.generate(options)}")
+
+        code = options[:code] || 200
+        scope = options[:scope] || _default_param_group_scope
+        param_group_name = options[:param_group]
+
+
+        if block.nil?
+          block = Apipie.get_param_group(scope, param_group_name)
+        end
+
+        _apipie_dsl_data[:returns][code] = { returns_args: [options, scope, block], properties_dsl_data: nil }
+
+        # _in_context_of_returns(code) do
+        #     begin
+        #       @_current_param_group = {
+        #           :scope => scope,
+        #           :name => options[:param_group_name],
+        #           :options => options,
+        #           :from_concern => scope.apipie_concern?
+        #       }
+        #       __tp("  executing block for [#{param_group_name}] (scope: #{scope}  in context of returns: #{_in_context_of_returns?})")
+        #       self.instance_exec(&Apipie.get_param_group(scope, param_group_name))
+        #     ensure
+        #       @_current_param_group = nil
+        #     end
+        # end
+
       end
 
       # where the group definition should be looked up when no scope
@@ -498,10 +546,17 @@ module Apipie
 
       # create method api and redefine newly added method
       def method_added(method_name) #:doc:
+        if _apipie_dsl_data[:only_for_returns]
+          puts "ERROR!!!!!  wrong _apipie_dsl_data in method_added!!!"
+        end
+        __tp("method_added(#{method_name}) only_for_returns:#{_apipie_dsl_data[:only_for_returns]} _in_context_of_returns?:#{_in_context_of_returns?}")
         super
+        # __tp(" 1  {#{Apipie.active_dsl?}} {#{_apipie_dsl_data[:api]}}")
         return if !Apipie.active_dsl? || !_apipie_dsl_data[:api]
+        # __tp(" 2")
 
         return if _apipie_dsl_data[:api_args].blank? && _apipie_dsl_data[:api_from_routes].blank?
+        # __tp(" 3")
 
         # remove method description if exists and create new one
         Apipie.remove_method_description(self, _apipie_dsl_data[:api_versions], method_name)

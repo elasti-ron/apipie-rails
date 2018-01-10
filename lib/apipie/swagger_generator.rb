@@ -19,6 +19,11 @@ module Apipie
       Apipie.configuration.swagger_content_type_input == :json
     end
 
+    def consumes_value_by_param_generation_method
+      return ['application/json'] if params_in_body?
+      ['application/x-www-form-urlencoded', 'multipart/form-data']
+    end
+
     def params_in_body_use_reference?
       Apipie.configuration.swagger_json_input_uses_refs
     end
@@ -65,7 +70,7 @@ module Apipie
               "x-copyright" => Apipie.configuration.copyright,
           },
           basePath: Apipie.api_base_url(version),
-          consumes: [],
+          consumes: consumes_value_by_param_generation_method,
           paths: {},
           definitions: {},
           tags: [],
@@ -76,10 +81,10 @@ module Apipie
       end
 
       if params_in_body?
-        @swagger[:consumes] = ['application/json']
+        # @swagger[:consumes] = ['application/json']
         @swagger[:info][:title] += " (params in:body)"
       else
-        @swagger[:consumes] = ['application/x-www-form-urlencoded', 'multipart/form-data']
+        # @swagger[:consumes] = ['application/x-www-form-urlencoded', 'multipart/form-data']
         @swagger[:info][:title] += " (params in:formData)"
       end
 
@@ -223,6 +228,7 @@ module Apipie
             operationId: op_id,
             summary: Apipie.app.translate(api.short_description, @current_lang),
             parameters: swagger_params_array_for_method(ruby_method, api.path),
+            consumes: consumes_value_by_param_generation_method,
             responses: responses
         }
 

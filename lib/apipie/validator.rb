@@ -306,6 +306,7 @@ module Apipie
         super(param_description)
         @proc = argument
         @param_group = param_group
+        __tp("HashValidator#initialize  @param_group:#{@param_group}")
         self.instance_exec(&@proc)
         # specifying action_aware on Hash influences the child params,
         # not the hash param itself: assuming it's required when

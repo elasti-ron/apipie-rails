@@ -43,6 +43,7 @@ module Dummy
     config.filter_parameters += [:password]
 
     config.to_prepare do
+      PetsController
       ExtendedController.send(:include, Concerns::ExtendingConcern)
     end
   end

@@ -5,7 +5,7 @@ module Apipie
 
     class Api
 
-      attr_accessor :short_description, :path, :http_method, :from_routes, :options, :responses
+      attr_accessor :short_description, :path, :http_method, :from_routes, :options, :returns
 
       def initialize(method, path, desc, options)
         @http_method = method.to_s
@@ -17,9 +17,10 @@ module Apipie
 
     end
 
-    attr_reader :full_description, :method, :resource, :apis, :examples, :see, :formats, :metadata, :headers, :show, :responses
+    attr_reader :full_description, :method, :resource, :apis, :examples, :see, :formats, :metadata, :headers, :show, :returns
 
     def initialize(method, resource, dsl_data)
+      __tp("\n>>>>> MethodDescription#initialize: [#{resource._name}##{method}] >>>>>>>>")
       @method = method.to_s
       @resource = resource
       @from_concern = dsl_data[:from_concern]
@@ -34,8 +35,8 @@ module Apipie
         Apipie::ErrorDescription.from_dsl_data(args)
       end
 
-      @responses = dsl_data[:responses].map do |args|
-        Apipie::ResponseDescription.from_dsl_data(self, args)
+      @returns = dsl_data[:returns].map do |code,entry|
+        Apipie::ResponseDescription.from_dsl_data(self, code, entry[:returns_args], entry[:properties_dsl_data])
       end
 
       @see = dsl_data[:see].map do |args|
@@ -48,9 +49,12 @@ module Apipie
 
       @metadata = dsl_data[:meta]
 
+      __tp("MethodDescription#initialize - ParamDescription loop beginning")
       @params_ordered = dsl_data[:params].map do |args|
+        __tp("MethodDescription#initialize - ParamDescription >> next")
         Apipie::ParamDescription.from_dsl_data(self, args)
       end
+      __tp("MethodDescription#initialize - ParamDescription loop ended")
       @params_ordered = ParamDescription.unify(@params_ordered)
       @headers = dsl_data[:headers]
 
@@ -59,6 +63,7 @@ module Apipie
       else
         true
       end
+      __tp("\n<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<")
     end
 
     def id

@@ -1,11 +1,20 @@
 class PetsController < ApplicationController
 
   def_param_group :pet do
+    # param :pet_inner_hash, Hash do
       param :name, String, :desc => "Name of pet", :required => true
       param :animal, String, :desc => "Type of pet", :required => true
+    # end
   end
 
-  # def_param_group :super_pet do
+  def_param_group :super_pet do
+    param :super_pet_inner_hash, Hash do
+      param_group :pet
+      # param :superpower, String, :desc => "The pet's superpower", :required => true
+    end
+  end
+
+  # def_param_group :super_pet2 do
   #   param :pet, Hash do
   #     param :name, String, :desc => "Name of pet", :required => true
   #     param :animal, String, :desc => "Type of pet", :required => true
@@ -13,19 +22,12 @@ class PetsController < ApplicationController
   #   param :superpower, String, :desc => "The pet's superpower", :required => true
   # end
 
-  def_param_group :super_pet do
-    param :p1, Hash do
-      param_group :pet
-    end
-
-    param :superpower, String, :desc => "The pet's superpower", :required => true
-  end
-
   api :POST, "/pets", "Create a pet"
-  # param_group :super_pet
   # returns :pet
+  # param :int1, Integer
+  # param_group :super_pet
   returns :super_pet, :code => 201
-  def create
+  def create_pet
     render :plain => "OK #{params.inspect}"
   end
 
