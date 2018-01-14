@@ -66,6 +66,7 @@ module Apipie
       @required = is_required?
 
       @only_in_response = (@options[:only_in] == :response)
+      raise ArgumentError.new("'#{@options[:only_in]}' is not a valid value for :only_in") if !@only_in_response && @options[:only_in].present?
 
       @show = if @options.has_key? :show
         @options[:show]

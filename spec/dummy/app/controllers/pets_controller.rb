@@ -2,8 +2,10 @@ class PetsController < ApplicationController
 
   def_param_group :pet do
     property :pet_inner_hash, Hash do
-      property :name, String, :desc => "Name of pet", :required => true
-      property :animal, String, :desc => "Type of pet", :required => true
+      property :name, String, :desc => "Name of pet", :required => false
+      property :animal, String, :desc => "Type of pet"
+      property :weight, Integer, :desc => "Weight in pounds"
+      param :nickname, String, :only_in => :response
     end
   end
 
@@ -32,7 +34,7 @@ class PetsController < ApplicationController
   # returns :pet
   # param :int1, Integer
   # param_group :super_pet
-  returns :code => 201 do
+  returns :code => 201, :desc => "Found a super pet" do
     param_group :super_pet
   end
   returns :code => 202 do

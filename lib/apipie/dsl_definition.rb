@@ -365,6 +365,7 @@ module Apipie
         __tp("property: [#{param_name}] block:#{block}")
         return unless Apipie.active_dsl?
         options[:only_in] ||= :response
+        options[:required] = true if options[:required].nil?
         param(param_name, validator, desc_or_options, options, &block)
       end
 

@@ -4,7 +4,7 @@ module Apipie
     include Apipie::DSL::Base
     include Apipie::DSL::Param
 
-    attr_reader :code
+    # attr_reader :code, :description
 
     def initialize(method_description, code, scope, block)
       __tp("ResponseObject#initialize #{method_description.method} --> #{code} (#{block})")
@@ -77,8 +77,12 @@ module Apipie
       raise ReturnsMultipleDefinitionError, type_or_options if @is_array_of && @type_ref
 
       @method_description = method_description
-      @description = options[:desc]
       @code = code
+      @description = options[:desc]
+      if @description.nil?
+        @description = Rack::Utils::HTTP_STATUS_CODES[@code]
+        raise "Cannot infer description from status code #{@code}" if @description.nil?
+      end
       @scope = scope
 
       @response_object = ResponseObject.new(method_description, code, scope, block)

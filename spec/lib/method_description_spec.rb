@@ -78,6 +78,14 @@ describe Apipie::MethodDescription do
       expect{Apipie::MethodDescription.new(:a, @resource, dsl_data)}.to raise_error(ArgumentError, /b is defined as response-only/)
     end
 
+    it "should raise error if :only_in is specified with a value other than :reponse" do
+      @resource = Apipie::ResourceDescription.new(ApplicationController, "dummy")
+      dsl_data[:params] = [[:a, String, nil, {}, nil],
+                           [:b, String, nil, {:only_in => :something_else}, nil],
+                           [:c, String, nil, {}, nil]]
+      expect{Apipie::MethodDescription.new(:a, @resource, dsl_data)}.to raise_error(ArgumentError, /'something_else' is not a valid value/)
+    end
+
   end
 
 

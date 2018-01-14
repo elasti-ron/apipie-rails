@@ -312,7 +312,13 @@ module Apipie
       end
 
       for response in method.returns
-        result[response.code] = {response: 'tbd'}
+        schema = json_schema_obj_from_params_array(response.params_ordered)
+
+        swagger_response_block = {
+          description: response.description,
+          schema: schema,
+        }
+        result[response.code] = swagger_response_block
       end
 
       if result.length == 0
