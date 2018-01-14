@@ -5,7 +5,7 @@ class PetsController < ApplicationController
   #-----------------------------------------------------------
   api :GET, "/pets/:id/as_properties", "Get a pet record"
   returns :code => 200 do
-    property :name, String, :desc => "Name of pet", :required => false
+    property :pet_name, String, :desc => "Name of pet", :required => false
     property :animal_type, ['dog','cat','iguana','kangaroo'], :desc => "Type of pet"   # required by default, because this is a 'property'
   end
   def show_as_properties
@@ -16,7 +16,7 @@ class PetsController < ApplicationController
   # same example, but properties are defined in a param group
   #-----------------------------------------------------------
   def_param_group :pet do
-    property :name, String, :desc => "Name of pet", :required => false
+    property :pet_name, String, :desc => "Name of pet", :required => false
     property :animal_type, ['dog','cat','iguana','kangaroo'], :desc => "Type of pet"   # required by default, because this is a 'property'
   end
 
@@ -67,7 +67,7 @@ class PetsController < ApplicationController
   end
 
   api :GET, "/pets/:id/extra_info", "Get extra information about a pet"
-  returns :code => 201, :desc => "Found a super pet" do
+  returns :code => 201, :desc => "Found a pet" do
     param_group :pet
   end
   returns :code => 202 do
@@ -82,7 +82,7 @@ class PetsController < ApplicationController
       param_group :pet_history
     end
   end
-  returns :code => 204, :desc => "in case fleas were discovered on the pet" do
+  returns :code => 204, :desc => "Fleas were discovered on the pet" do
     param_group :pet
     property :num_fleas, Integer, :desc => "Number of fleas on this pet"
   end
