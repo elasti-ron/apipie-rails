@@ -315,9 +315,10 @@ module Apipie
         schema = json_schema_obj_from_params_array(response.params_ordered)
 
         swagger_response_block = {
-          description: response.description,
-          schema: schema,
+          description: response.description
         }
+        swagger_response_block[:schema] = schema if schema
+
         result[response.code] = swagger_response_block
       end
 

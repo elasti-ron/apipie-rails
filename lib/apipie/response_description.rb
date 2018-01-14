@@ -13,7 +13,7 @@ module Apipie
       @code = code
       @param_group = {scope: scope}
 
-      self.instance_exec(&block)
+      self.instance_exec(&block) if block
 
       prepare_hash_params
     end

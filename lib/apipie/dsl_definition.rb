@@ -446,7 +446,7 @@ module Apipie
         param_group_name = options[:param_group]
 
         if block.nil?
-          block = Apipie.get_param_group(scope, param_group_name)
+          block = Apipie.get_param_group(scope, param_group_name) if param_group_name
         elsif param_group_name
           raise "cannot specify both block and param_group"
         end
