@@ -7,11 +7,27 @@ module Apipie
     def initialize(method_description, code, scope, block)
       __tp("ResponseObject#initialize #{method_description.method} --> #{code} (#{block})")
       @method_description = method_description
+      @scope = scope
+      @code = code
       @param_group = {scope: scope}
 
       self.instance_exec(&block)
 
       prepare_hash_params
+    end
+
+    # this routine overrides Param#_default_param_group_scope and is called if Param#param_group is
+    # invoked during the instance_exec call in ResponseObject#initialize
+    def _default_param_group_scope
+      @scope
+    end
+
+    # def apipie_concern?
+    #   @scope.apipie_concern?
+    # end
+
+    def name
+      "response #{@code} for #{@method_description.method}"
     end
 
     def params_ordered

@@ -1,7 +1,7 @@
 # Apipie DSL functions.
 
 def __tp(str)
-  puts "tracepoint: #{str}"
+  #puts "tracepoint: #{str}"
 end
 
 module Apipie
@@ -23,7 +23,7 @@ module Apipie
       private
 
       def _in_context_of_returns(code, &block)
-        @in_context_of_returns_for_code = code
+        # @in_context_of_returns_for_code = code
         yield
       ensure
         @in_context_of_returns_for_code = nil
@@ -379,6 +379,9 @@ module Apipie
         if scope.nil?
           __tp("!!!! SCOPE IS NIL!!!")
         end
+        if scope.is_a? ResponseObject
+          __tp("!!!! SCOPE IS A RESPONSEOBJECT!!!")
+        end
         @_current_param_group = {
             :scope => scope,
             :name => name,
@@ -433,28 +436,13 @@ module Apipie
         scope = options[:scope] || _default_param_group_scope
         param_group_name = options[:param_group]
 
-
         if block.nil?
           block = Apipie.get_param_group(scope, param_group_name)
+        elsif param_group_name
+          raise "cannot specify both block and param_group"
         end
 
         _apipie_dsl_data[:returns][code] = { returns_args: [options, scope, block], properties_dsl_data: nil }
-
-        # _in_context_of_returns(code) do
-        #     begin
-        #       @_current_param_group = {
-        #           :scope => scope,
-        #           :name => options[:param_group_name],
-        #           :options => options,
-        #           :from_concern => scope.apipie_concern?
-        #       }
-        #       __tp("  executing block for [#{param_group_name}] (scope: #{scope}  in context of returns: #{_in_context_of_returns?})")
-        #       self.instance_exec(&Apipie.get_param_group(scope, param_group_name))
-        #     ensure
-        #       @_current_param_group = nil
-        #     end
-        # end
-
       end
 
       # where the group definition should be looked up when no scope

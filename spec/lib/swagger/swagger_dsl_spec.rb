@@ -12,23 +12,23 @@ describe PetsController do
       desc._methods[:create_pet]
     end
 
-    it "should return code 200 with a pet object" do
-      response_obj = subject.responses.detect{|e| e.code == 200 }
-      expect(response_obj.code).not_to be_nil
-
-      expect(response_obj.params_ordered[0].name).to eq(:name)
-      expect(response_obj.params_ordered[1].name).to eq(:animal)
-
-      expect(response_obj.to_json).to eq({code: 200, description: nil, returns_object: [
-          {:name=>"name", :full_name=>"returns[name]", :description=>"\n<p>Name of pet</p>\n", :required=>true, :allow_nil=>false, :allow_blank=>false, :validator=>"Must be a String", :expected_type=>"string", :metadata=>nil, :show=>true},
-          {:name=>"animal", :full_name=>"returns[animal]", :description=>"\n<p>Type of pet</p>\n", :required=>true, :allow_nil=>false, :allow_blank=>false, :validator=>"Must be a String", :expected_type=>"string", :metadata=>nil, :show=>true}
-      ]})
-    end
+    # it "should return code 200 with a pet object" do
+    #   response_obj = subject.responses.detect{|e| e.code == 200 }
+    #   expect(response_obj.code).not_to be_nil
+    #
+    #   expect(response_obj.params_ordered[0].name).to eq(:name)
+    #   expect(response_obj.params_ordered[1].name).to eq(:animal)
+    #
+    #   expect(response_obj.to_json).to eq({code: 200, description: nil, returns_object: [
+    #       {:name=>"name", :full_name=>"returns[name]", :description=>"\n<p>Name of pet</p>\n", :required=>true, :allow_nil=>false, :allow_blank=>false, :validator=>"Must be a String", :expected_type=>"string", :metadata=>nil, :show=>true},
+    #       {:name=>"animal", :full_name=>"returns[animal]", :description=>"\n<p>Type of pet</p>\n", :required=>true, :allow_nil=>false, :allow_blank=>false, :validator=>"Must be a String", :expected_type=>"string", :metadata=>nil, :show=>true}
+    #   ]})
+    # end
 
     it "should return code 201 with a super_pet object" do
       returns_obj = subject.returns.detect{|e| e.code == 201 }
 
-      puts returns_obj
+      puts returns_obj.to_json
       expect(returns_obj.code).to eq(201)
 
       expect(returns_obj.params_ordered[0].name).to eq(:super_pet_inner_hash)
@@ -36,6 +36,47 @@ describe PetsController do
       expect(returns_obj.params_ordered[0].validator.params_ordered[0].name).to eq(:pet_inner_hash)
       expect(returns_obj.params_ordered[0].validator.params_ordered[0].validator.params_ordered[0].name).to eq(:name)
       expect(returns_obj.params_ordered[0].validator.params_ordered[0].validator.params_ordered[1].name).to eq(:animal)
+    end
+
+    it "should return code 202 with a pet object" do
+      returns_obj = subject.returns.detect{|e| e.code == 202 }
+
+      puts returns_obj.to_json
+      expect(returns_obj.code).to eq(202)
+
+      expect(returns_obj.params_ordered[0].name).to eq(:pet_inner_hash)
+      expect(returns_obj.params_ordered[0].validator.class).to eq(Apipie::Validator::HashValidator)
+      expect(returns_obj.params_ordered[0].validator.params_ordered[0].name).to eq(:name)
+      expect(returns_obj.params_ordered[0].validator.params_ordered[1].name).to eq(:animal)
+    end
+
+    it "should return code 203 with pet and super_pet object" do
+      returns_obj = subject.returns.detect{|e| e.code == 203 }
+
+      puts returns_obj.to_json
+      expect(returns_obj.code).to eq(203)
+
+      expect(returns_obj.params_ordered[0].name).to eq(:super_pet_inner_hash)
+      expect(returns_obj.params_ordered[0].validator.class).to eq(Apipie::Validator::HashValidator)
+      expect(returns_obj.params_ordered[0].validator.params_ordered[0].name).to eq(:pet_inner_hash)
+      expect(returns_obj.params_ordered[0].validator.params_ordered[0].validator.params_ordered[0].name).to eq(:name)
+      expect(returns_obj.params_ordered[0].validator.params_ordered[0].validator.params_ordered[1].name).to eq(:animal)
+      expect(returns_obj.params_ordered[1].name).to eq(:pet_inner_hash)
+      expect(returns_obj.params_ordered[1].validator.class).to eq(Apipie::Validator::HashValidator)
+      expect(returns_obj.params_ordered[1].validator.params_ordered[0].name).to eq(:name)
+      expect(returns_obj.params_ordered[1].validator.params_ordered[1].name).to eq(:animal)
+    end
+
+    it "should return code 204 with code (Number) and yesno (Boolean)" do
+      returns_obj = subject.returns.detect{|e| e.code == 204 }
+
+      puts returns_obj.to_json
+      expect(returns_obj.code).to eq(204)
+
+      expect(returns_obj.params_ordered[0].name).to eq(:code1)
+      expect(returns_obj.params_ordered[0].validator.class).to eq(Apipie::Validator::IntegerValidator)
+      expect(returns_obj.params_ordered[1].name).to eq(:code2)
+      expect(returns_obj.params_ordered[1].validator.class).to eq(Apipie::Validator::EnumValidator)
     end
 
   end

@@ -23,13 +23,34 @@ class PetsController < ApplicationController
   # end
 
   api :POST, "/pets", "Create a pet"
-  # returns :pet
-  # param :int1, Integer
-  # param_group :super_pet
   returns :super_pet, :code => 201
   def create_pet
     render :plain => "OK #{params.inspect}"
   end
+
+  api :POST, "/pets2", "Create a pet"
+  # returns :pet
+  # param :int1, Integer
+  # param_group :super_pet
+  returns :code => 201 do
+    param_group :super_pet
+  end
+  returns :code => 202 do
+    param_group :pet
+  end
+  returns :code => 203 do
+    param_group :super_pet
+    param_group :pet
+  end
+  returns :code => 204 do
+    param :code1, Integer, :desc => "Integer"
+    param :code2, ["hi", "bye"], :desc => "Enum"
+  end
+  def create_pet
+    render :plain => "OK #{params.inspect}"
+  end
+
+
 
   # api :GET, "/pets", "Get all pets"
   # returns :array_of => :pet, :desc => "list of users"
