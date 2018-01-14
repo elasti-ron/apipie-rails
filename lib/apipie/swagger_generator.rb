@@ -311,12 +311,8 @@ module Apipie
         result[error.code] = error_block
       end
 
-      for response in method.responses
-        if result[200]
-          result[200] << response
-        else
-          result[200] = [response]
-        end
+      for response in method.returns
+        result[response.code] = {response: 'tbd'}
       end
 
       if result.length == 0

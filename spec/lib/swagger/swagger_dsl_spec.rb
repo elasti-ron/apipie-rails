@@ -67,7 +67,7 @@ describe PetsController do
       expect(returns_obj.params_ordered[1].validator.params_ordered[1].name).to eq(:animal)
     end
 
-    it "should return code 204 with code (Number) and yesno (Boolean)" do
+    it "should return code 204 with :code1 (Number) and :code2 (Enum)" do
       returns_obj = subject.returns.detect{|e| e.code == 204 }
 
       puts returns_obj.to_json
@@ -77,6 +77,7 @@ describe PetsController do
       expect(returns_obj.params_ordered[0].validator.class).to eq(Apipie::Validator::IntegerValidator)
       expect(returns_obj.params_ordered[1].name).to eq(:code2)
       expect(returns_obj.params_ordered[1].validator.class).to eq(Apipie::Validator::EnumValidator)
+      expect(returns_obj.params_ordered[1].only_in_response).to be_truthy
     end
 
   end

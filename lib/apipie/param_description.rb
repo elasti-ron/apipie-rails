@@ -8,7 +8,7 @@ module Apipie
   # validator - Validator::BaseValidator subclass
   class ParamDescription
 
-    attr_reader :method_description, :name, :desc, :allow_nil, :allow_blank, :validator, :options, :metadata, :show, :as, :validations
+    attr_reader :method_description, :name, :desc, :allow_nil, :allow_blank, :validator, :options, :metadata, :show, :as, :validations, :only_in_response
     attr_accessor :parent, :required
 
     def self.from_dsl_data(method_description, args)
@@ -64,6 +64,8 @@ module Apipie
       @metadata = @options[:meta]
 
       @required = is_required?
+
+      @only_in_response = (@options[:only_in] == :response)
 
       @show = if @options.has_key? :show
         @options[:show]

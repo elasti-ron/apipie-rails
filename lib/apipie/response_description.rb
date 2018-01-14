@@ -4,6 +4,8 @@ module Apipie
     include Apipie::DSL::Base
     include Apipie::DSL::Param
 
+    attr_reader :code
+
     def initialize(method_description, code, scope, block)
       __tp("ResponseObject#initialize #{method_description.method} --> #{code} (#{block})")
       @method_description = method_description

@@ -52,7 +52,9 @@ module Apipie
       __tp("MethodDescription#initialize - ParamDescription loop beginning")
       @params_ordered = dsl_data[:params].map do |args|
         __tp("MethodDescription#initialize - ParamDescription >> next")
-        Apipie::ParamDescription.from_dsl_data(self, args)
+        param = Apipie::ParamDescription.from_dsl_data(self, args)
+        raise ArgumentError.new("#{param.name} is defined as response-only.  Cannot be specified as a method argument.") if param.only_in_response
+        param
       end
       __tp("MethodDescription#initialize - ParamDescription loop ended")
       @params_ordered = ParamDescription.unify(@params_ordered)

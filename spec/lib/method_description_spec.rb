@@ -68,4 +68,17 @@ describe Apipie::MethodDescription do
 
   end
 
+  describe "response-only properties" do
+
+    it "should raise error if defining method using response-only parameter" do
+      @resource = Apipie::ResourceDescription.new(ApplicationController, "dummy")
+      dsl_data[:params] = [[:a, String, nil, {}, nil],
+                           [:b, String, nil, {:only_in => :response}, nil],
+                           [:c, String, nil, {}, nil]]
+      expect{Apipie::MethodDescription.new(:a, @resource, dsl_data)}.to raise_error(ArgumentError, /b is defined as response-only/)
+    end
+
+  end
+
+
 end

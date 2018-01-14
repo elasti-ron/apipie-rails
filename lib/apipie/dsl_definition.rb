@@ -22,25 +22,25 @@ module Apipie
 
       private
 
-      def _in_context_of_returns(code, &block)
-        # @in_context_of_returns_for_code = code
-        yield
-      ensure
-        @in_context_of_returns_for_code = nil
-      end
-
-      def _in_context_of_returns?
-        @in_context_of_returns_for_code != nil
-      end
+      # def _in_context_of_returns(code, &block)
+      #   # @in_context_of_returns_for_code = code
+      #   yield
+      # ensure
+      #   @in_context_of_returns_for_code = nil
+      # end
+      #
+      # def _in_context_of_returns?
+      #   @in_context_of_returns_for_code != nil
+      # end
 
       def _apipie_dsl_data
-        if _in_context_of_returns?
-          # __tp("     _apipie_dsl_data is in_context_of_returns (self: #{self})")
-          @_apipie_dsl_data[:returns][@in_context_of_returns_for_code][:properties_dsl_data] ||= _apipie_dsl_data_init(true)
-        else
+        # if _in_context_of_returns?
+        #   # __tp("     _apipie_dsl_data is in_context_of_returns (self: #{self})")
+        #   @_apipie_dsl_data[:returns][@in_context_of_returns_for_code][:properties_dsl_data] ||= _apipie_dsl_data_init(true)
+        # else
           # __tp("     _apipie_dsl_data is regular (self: #{self})")
           @_apipie_dsl_data ||= _apipie_dsl_data_init
-        end
+        # end
       end
 
       def _apipie_dsl_data_clear
@@ -351,13 +351,21 @@ module Apipie
       #   end
       #
       def param(param_name, validator, desc_or_options = nil, options = {}, &block) #:doc:
-        __tp("param: [#{param_name}] block:#{block} (_in_context_of_returns?: #{_in_context_of_returns?})")
+        # __tp("param: [#{param_name}] block:#{block} (_in_context_of_returns?: #{_in_context_of_returns?})")
+        __tp("param: [#{param_name}] block:#{block}")
         return unless Apipie.active_dsl?
         _apipie_dsl_data[:params] << [param_name,
                                       validator,
                                       desc_or_options,
                                       options.merge(:param_group => @_current_param_group),
                                       block]
+      end
+
+      def property(param_name, validator, desc_or_options = nil, options = {}, &block) #:doc:
+        __tp("property: [#{param_name}] block:#{block}")
+        return unless Apipie.active_dsl?
+        options[:only_in] ||= :response
+        param(param_name, validator, desc_or_options, options, &block)
       end
 
       # Reuses param group for this method. The definition is looked up
@@ -414,7 +422,7 @@ module Apipie
       #   end
       #
       def returns(pgroup_or_options, desc_or_options=nil, options={}, &block) #:doc:
-        __tp("returns [#{pgroup_or_options}] _in_context_of_returns?:#{_in_context_of_returns?}")
+        __tp("returns [#{pgroup_or_options}]") # _in_context_of_returns?:#{_in_context_of_returns?}")
         return unless Apipie.active_dsl?
 
 
@@ -537,7 +545,7 @@ module Apipie
         if _apipie_dsl_data[:only_for_returns]
           puts "ERROR!!!!!  wrong _apipie_dsl_data in method_added!!!"
         end
-        __tp("method_added(#{method_name}) only_for_returns:#{_apipie_dsl_data[:only_for_returns]} _in_context_of_returns?:#{_in_context_of_returns?}")
+        __tp("method_added(#{method_name}) only_for_returns:#{_apipie_dsl_data[:only_for_returns]}")# _in_context_of_returns?:#{_in_context_of_returns?}")
         super
         # __tp(" 1  {#{Apipie.active_dsl?}} {#{_apipie_dsl_data[:api]}}")
         return if !Apipie.active_dsl? || !_apipie_dsl_data[:api]

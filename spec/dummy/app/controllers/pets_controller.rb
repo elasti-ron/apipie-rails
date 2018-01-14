@@ -1,14 +1,14 @@
 class PetsController < ApplicationController
 
   def_param_group :pet do
-    param :pet_inner_hash, Hash do
-      param :name, String, :desc => "Name of pet", :required => true
-      param :animal, String, :desc => "Type of pet", :required => true
+    property :pet_inner_hash, Hash do
+      property :name, String, :desc => "Name of pet", :required => true
+      property :animal, String, :desc => "Type of pet", :required => true
     end
   end
 
   def_param_group :super_pet do
-    param :super_pet_inner_hash, Hash do
+    property :super_pet_inner_hash, Hash do
       param_group :pet
       # param :superpower, String, :desc => "The pet's superpower", :required => true
     end
@@ -43,8 +43,8 @@ class PetsController < ApplicationController
     param_group :pet
   end
   returns :code => 204 do
-    param :code1, Integer, :desc => "Integer"
-    param :code2, ["hi", "bye"], :desc => "Enum"
+    property :code1, Integer, :desc => "Integer"
+    property :code2, ["hi", "bye"], :desc => "Enum"
   end
   def create_pet
     render :plain => "OK #{params.inspect}"
