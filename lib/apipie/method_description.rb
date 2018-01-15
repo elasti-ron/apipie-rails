@@ -34,8 +34,8 @@ module Apipie
         Apipie::ErrorDescription.from_dsl_data(args)
       end
 
-      @returns = dsl_data[:returns].map do |code,entry|
-        Apipie::ResponseDescription.from_dsl_data(self, code, entry[:returns_args], entry[:properties_dsl_data])
+      @returns = dsl_data[:returns].map do |code,args|
+        Apipie::ResponseDescription.from_dsl_data(self, code, args)
       end
 
       @see = dsl_data[:see].map do |args|

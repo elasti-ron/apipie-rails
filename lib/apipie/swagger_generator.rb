@@ -308,6 +308,13 @@ module Apipie
       for response in method.returns
         schema = json_schema_obj_from_params_array(response.params_ordered)
 
+        if response.is_array? && schema
+          schema = {
+              type: "array",
+              items: schema
+          }
+        end
+
         swagger_response_block = {
           description: response.description
         }

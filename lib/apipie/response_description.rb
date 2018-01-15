@@ -46,24 +46,29 @@ module Apipie
     include Apipie::DSL::Base
     include Apipie::DSL::Param
 
-    attr_reader :code, :description, :scope, :type_ref, :hash_validator
+    attr_reader :code, :description, :scope, :type_ref, :hash_validator, :is_array_of
 
-    def self.from_dsl_data(method_description, code, returns_args, properties_dsl_data)
-      options, scope, block = returns_args
+    def self.from_dsl_data(method_description, code, args)
+      options, scope, block = args
 
       Apipie::ResponseDescription.new(method_description,
                                       code,
                                       options,
                                       scope,
-                                      block,
-                                      properties_dsl_data)
+                                      block)
     end
 
-    def initialize(method_description, code, options, scope, block, properties_dsl_data)
+    def is_array?
+      @is_array_of != false
+    end
+
+    def initialize(method_description, code, options, scope, block)
 
       @type_ref = options[:param_group]
       @is_array_of = options[:array_of] || false
-      raise ReturnsMultipleDefinitionError, type_or_options if @is_array_of && @type_ref
+      raise ReturnsMultipleDefinitionError, options if @is_array_of && @type_ref
+
+      @type_ref ||= @is_array_of
 
       @method_description = method_description
 
@@ -95,6 +100,7 @@ module Apipie
       {
           :code => code,
           :description => description,
+          :is_array => is_array?,
           :returns_object => params_ordered.map{ |param| param.to_json(lang).tap{|h| h.delete(:validations) }}.flatten,
       }
     end

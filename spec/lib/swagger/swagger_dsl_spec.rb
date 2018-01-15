@@ -45,17 +45,47 @@ describe PetsController do
     swagger[:paths][path][method][:responses][code]
   end
 
+  describe "PetsController#index" do
+    subject do
+      desc._methods[:index]
+    end
+
+    it "should return code 200 with array of entries of the format {'pet_name', 'animal_type'}" do
+      print_swagger
+      returns_obj = subject.returns.detect{|e| e.code == 200 }
+
+      puts returns_obj.to_json
+      expect(returns_obj.code).to eq(200)
+      expect(returns_obj.is_array?).to eq(true)
+
+      expect(returns_obj).to match_param_structure([:pet_name, :animal_type])
+    end
+
+    it 'should have the response described in the swagger' do
+      print_swagger
+      response = swagger_response_for('/pets')
+      expect(response[:description]).to eq("list of pets")
+
+      schema = response[:schema]
+      expect(schema[:type]).to eq("array")
+
+      a_schema = schema[:items]
+      expect(a_schema).to have_param(:pet_name, 'string', {:description => 'Name of pet', :required => false})
+      expect(a_schema).to have_param(:animal_type, 'string', {:description => 'Type of pet', :enum => ['dog','cat','iguana','kangaroo']})
+    end
+  end
+
   describe "PetsController#show_as_properties" do
     subject do
       desc._methods[:show_as_properties]
     end
 
     it "should return code 200 with 'pet_name' and 'animal_type'" do
-      print_swagger
       returns_obj = subject.returns.detect{|e| e.code == 200 }
 
       puts returns_obj.to_json
       expect(returns_obj.code).to eq(200)
+      expect(returns_obj.is_array?).to eq(false)
 
       expect(returns_obj).to match_param_structure([:pet_name, :animal_type])
     end
@@ -80,6 +110,7 @@ describe PetsController do
 
       puts returns_obj.to_json
       expect(returns_obj.code).to eq(200)
+      expect(returns_obj.is_array?).to eq(false)
 
       expect(returns_obj).to match_param_structure([:pet_name, :animal_type])
       expect(returns_obj.params_ordered[0].is_required?).to be_falsey
@@ -113,6 +144,7 @@ describe PetsController do
 
       puts returns_obj.to_json
       expect(returns_obj.code).to eq(200)
+      expect(returns_obj.is_array?).to eq(false)
 
       expect(returns_obj).to match_param_structure([:pet_id, :pet_name, :animal_type])
     end
@@ -138,6 +170,7 @@ describe PetsController do
 
       puts returns_obj.to_json
       expect(returns_obj.code).to eq(200)
+      expect(returns_obj.is_array?).to eq(false)
 
       expect(returns_obj).to match_param_structure([:owner_name, :vote])
     end
@@ -162,6 +195,7 @@ describe PetsController do
 
       puts returns_obj.to_json
       expect(returns_obj.code).to eq(201)
+      expect(returns_obj.is_array?).to eq(false)
 
       expect(returns_obj).to match_param_structure([:pet_name, :animal_type])
     end
@@ -179,6 +213,7 @@ describe PetsController do
 
       puts returns_obj.to_json
       expect(returns_obj.code).to eq(202)
+      expect(returns_obj.is_array?).to eq(false)
 
       expect(returns_obj).to match_param_structure([:pet_name,
                                                     :animal_type,
@@ -205,6 +240,7 @@ describe PetsController do
 
       puts returns_obj.to_json
       expect(returns_obj.code).to eq(203)
+      expect(returns_obj.is_array?).to eq(false)
 
       expect(returns_obj).to match_param_structure([:pet_name,
                                                     :animal_type,

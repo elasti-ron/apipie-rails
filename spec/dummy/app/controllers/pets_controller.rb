@@ -6,6 +6,24 @@ class PetsController < ApplicationController
   end
 
   #-----------------------------------------------------------
+  # a param_group for reuse below
+  #-----------------------------------------------------------
+  def_param_group :pet do
+    property :pet_name, String, :desc => "Name of pet", :required => false
+    property :animal_type, ['dog','cat','iguana','kangaroo'], :desc => "Type of pet"   # required by default, because this is a 'property'
+  end
+
+  #-----------------------------------------------------------
+  #  Method returning an array
+  #-----------------------------------------------------------
+  api :GET, "/pets", "Get all pets"
+  returns :array_of => :pet, :desc => "list of pets"
+  def index
+    render :plain => "all pets"
+  end
+
+
+  #-----------------------------------------------------------
   # simple 'returns' example: a method that returns a pet record
   #-----------------------------------------------------------
   api :GET, "/pets/:id/as_properties", "Get a pet record"
@@ -20,11 +38,6 @@ class PetsController < ApplicationController
   #-----------------------------------------------------------
   # same example, but properties are defined in a param group
   #-----------------------------------------------------------
-  def_param_group :pet do
-    property :pet_name, String, :desc => "Name of pet", :required => false
-    property :animal_type, ['dog','cat','iguana','kangaroo'], :desc => "Type of pet"   # required by default, because this is a 'property'
-  end
-
   api :GET, "/pets/:id/as_param_group_of_properties", "Get a pet record"
   returns :pet, "The pet"
   def show_as_param_group_of_properties
@@ -110,16 +123,6 @@ class PetsController < ApplicationController
   def show_extra_info
     render :plain => "please disinfect your pet"
   end
-
-  #-----------------------------------------------------------
-  #  Not implemented yet - method returning an array
-  #-----------------------------------------------------------
-
-  # api :GET, "/pets", "Get all pets"
-  # returns :array_of => :pet, :desc => "list of pets"
-  # def index
-  #   redner :plain => "pets"
-  # end
 
 end
 
