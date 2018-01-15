@@ -3,25 +3,40 @@ require 'rack/utils'
 require 'rspec/expectations'
 
 RSpec::Matchers.define :match_param_structure do |expected|
-  num = 0
+  @last_message = nil
+
   match do |actual|
+    deep_match?(actual, expected)
+  end
+
+  def deep_match?(actual, expected, breadcrumb=[])
+    num = 0
     for pdesc in expected do
       if pdesc.is_a? Symbol
-        if ( actual.params_ordered[num].name.to_sym != pdesc.to_sym )
-          puts "#{actual.params_ordered[num].name} != #{pdesc}"
-          return false
-        end
+        return false unless fields_match?(actual.params_ordered[num], pdesc, breadcrumb)
       elsif pdesc.is_a? Hash
-        if ( actual.params_ordered[num].name.to_sym != pdesc.keys[0].to_sym)
-          puts "Name of Hash <#{actual.params_ordered[num].name}> != <#{pdesc.keys[0]}>"
-          return false
-        end
-        expect(actual.params_ordered[num].validator).to match_param_structure(pdesc.values[0])
+        return false unless fields_match?(actual.params_ordered[num], pdesc.keys[0], breadcrumb)
+        return false unless deep_match?(actual.params_ordered[num].validator, pdesc.values[0], breadcrumb + [pdesc.keys[0]])
       end
       num+=1
     end
-    puts "param count: #{actual.params_ordered.count} != #{num}" if actual.params_ordered.count != num
+    @fail_message = "expected property count#{breadcrumb == [] ? '' : ' of ' + (breadcrumb).join('.')} (#{actual.params_ordered.count}) to be #{num}"
     actual.params_ordered.count == num
+  end
+
+  def fields_match?(param, expected_name, breadcrumb)
+    return false unless have_field?(param, expected_name, breadcrumb)
+    @fail_message = "expected #{(breadcrumb + [param.name]).join('.')} to eq #{(breadcrumb + [expected_name]).join('.')}"
+    param.name.to_s == expected_name.to_s
+  end
+
+  def have_field?(field, expected_name, breadcrumb)
+    @fail_message = "expected property #{(breadcrumb+[expected_name]).join('.')}"
+    !field.nil?
+  end
+
+  failure_message do |actual|
+    @fail_message
   end
 end
 
