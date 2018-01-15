@@ -1,4 +1,8 @@
 class PetsController < ApplicationController
+  resource_description do
+    short 'Pets'
+    path '/pets'
+  end
 
   #-----------------------------------------------------------
   # simple 'returns' example: a method that returns a pet record
@@ -25,6 +29,22 @@ class PetsController < ApplicationController
   def show_as_param_group_of_properties
     render :plain => "showing pet properties defined as param groups"
   end
+
+  #-----------------------------------------------------------
+  # mixing request/response and response-only parameters
+  #-----------------------------------------------------------
+  def_param_group :pet_with_id do
+    param :pet_id, String, :desc => "id of pet", :required => true
+    param :pet_name, String, :desc => "Name of pet", :required => false, :only_in => :response
+    property :animal_type, ['dog','cat','iguana','kangaroo'], :desc => "Type of pet"   # this is implicitly :only_in => :response
+  end
+  api :GET, "/pets/pet_by_id", "Get a pet record with the pet id in the body of the request"
+  param_group :pet_with_id # only the pet_id is expected to be in here
+  returns :pet_with_id, :code => 200
+  def show_pet_by_id
+    render :plain => "returning a record with 3 fields"
+  end
+
 
 
   #-----------------------------------------------------------
@@ -82,12 +102,12 @@ class PetsController < ApplicationController
       param_group :pet_history
     end
   end
-  returns :code => 204, :desc => "Fleas were discovered on the pet" do
+  returns :code => :unprocessable_entity, :desc => "Fleas were discovered on the pet" do
     param_group :pet
     property :num_fleas, Integer, :desc => "Number of fleas on this pet"
   end
   def show_extra_info
-    render :plain => "here's some extra info"
+    render :plain => "please disinfect your pet"
   end
 
   #-----------------------------------------------------------

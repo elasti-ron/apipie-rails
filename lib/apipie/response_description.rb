@@ -10,7 +10,7 @@ module Apipie
       __tp("ResponseObject#initialize #{method_description.method} --> #{code} (#{block})")
       @method_description = method_description
       @scope = scope
-      @code = code
+      # @code = code
       @param_group = {scope: scope}
 
       self.instance_exec(&block) if block
@@ -77,7 +77,13 @@ module Apipie
       raise ReturnsMultipleDefinitionError, type_or_options if @is_array_of && @type_ref
 
       @method_description = method_description
-      @code = code
+
+      if code.is_a? Symbol
+        @code = Rack::Utils::SYMBOL_TO_STATUS_CODE[code]
+      else
+        @code = code
+      end
+
       @description = options[:desc]
       if @description.nil?
         @description = Rack::Utils::HTTP_STATUS_CODES[@code]

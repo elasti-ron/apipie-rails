@@ -69,23 +69,19 @@ describe Apipie::MethodDescription do
   end
 
   describe "response-only properties" do
-
-    it "should raise error if defining method using response-only parameter" do
+    before(:each) do
       @resource = Apipie::ResourceDescription.new(ApplicationController, "dummy")
       dsl_data[:params] = [[:a, String, nil, {}, nil],
                            [:b, String, nil, {:only_in => :response}, nil],
                            [:c, String, nil, {}, nil]]
-      expect{Apipie::MethodDescription.new(:a, @resource, dsl_data)}.to raise_error(ArgumentError, /b is defined as response-only/)
+      @method = Apipie::MethodDescription.new(:a, @resource, dsl_data)
+      @resource.add_method_description @method
     end
 
-    it "should raise error if :only_in is specified with a value other than :reponse" do
-      @resource = Apipie::ResourceDescription.new(ApplicationController, "dummy")
-      dsl_data[:params] = [[:a, String, nil, {}, nil],
-                           [:b, String, nil, {:only_in => :something_else}, nil],
-                           [:c, String, nil, {}, nil]]
-      expect{Apipie::MethodDescription.new(:a, @resource, dsl_data)}.to raise_error(ArgumentError, /'something_else' is not a valid value/)
+    it "should ignore response-only parameters" do
+      expect(@method.params.keys).to eq([:a, :c])
+      expect(@method.to_json[:params].map{|h| h[:name]}).to eq(['a', 'c'])
     end
-
   end
 
 

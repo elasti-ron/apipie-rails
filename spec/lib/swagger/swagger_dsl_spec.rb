@@ -45,10 +45,6 @@ describe PetsController do
   let(:dsl_data) { ActionController::Base.send(:_apipie_dsl_data_init) }
   let(:desc) { Apipie.get_resource_description(PetsController, Apipie.configuration.default_version) }
 
-  def match()
-
-  end
-
   describe "PetsController#show_as_properties" do
     subject do
       desc._methods[:show_as_properties]
@@ -76,6 +72,30 @@ describe PetsController do
       expect(returns_obj.code).to eq(200)
 
       expect(returns_obj).to match_param_structure([:pet_name, :animal_type])
+      expect(returns_obj.params_ordered[0].is_required?).to be_falsey
+      expect(returns_obj.params_ordered[1].is_required?).to be_truthy
+    end
+  end
+
+  describe "PetsController#show_pet_by_id" do
+    subject do
+      desc._methods[:show_pet_by_id]
+    end
+
+    it "should have only oauth (from ApplicationController) and pet_id as an input parameters" do
+      params_obj = subject.params_ordered
+
+      expect(params_obj[0].name).to eq(:oauth)
+      expect(params_obj[1].name).to eq(:pet_id)
+    end
+
+    it "should return code 200 with 'pet_id', pet_name' and 'animal_type'" do
+      returns_obj = subject.returns.detect{|e| e.code == 200 }
+
+      puts returns_obj.to_json
+      expect(returns_obj.code).to eq(200)
+
+      expect(returns_obj).to match_param_structure([:pet_id, :pet_name, :animal_type])
     end
   end
 
@@ -116,8 +136,8 @@ describe PetsController do
 
       expect(returns_obj).to match_param_structure([:pet_name,
                                                     :animal_type,
-                                                    {:pet_measurements => [:weight, :height, :num_legs]
-                                                    }])
+                                                    {:pet_measurements => [:weight, :height, :num_legs]}
+                                                    ])
     end
 
     it "should return code 203 with spread out 'pet', encapsulated 'pet_measurements' and encapsulated 'pet_history'" do
@@ -128,16 +148,16 @@ describe PetsController do
 
       expect(returns_obj).to match_param_structure([:pet_name,
                                                     :animal_type,
-                                                    {:pet_measurements => [:weight, :height,:num_legs] },
+                                                    {:pet_measurements => [:weight, :height,:num_legs]},
                                                     {:pet_history => [:did_visit_vet, :avg_meals_per_day]}
                                                    ])
     end
 
-    it "should return code 204 with spread out 'pet' and 'num_fleas'" do
-      returns_obj = subject.returns.detect{|e| e.code == 204 }
+    it "should return code matching :unprocessable_entity (422) with spread out 'pet' and 'num_fleas'" do
+      returns_obj = subject.returns.detect{|e| e.code == 422 }
 
       puts returns_obj.to_json
-      expect(returns_obj.code).to eq(204)
+      expect(returns_obj.code).to eq(422)
 
       expect(returns_obj).to match_param_structure([:pet_name,
                                                     :animal_type,
@@ -192,7 +212,7 @@ describe "TBD" do
       expect(returns_obj.params_ordered[0].validator.class).to eq(Apipie::Validator::IntegerValidator)
       expect(returns_obj.params_ordered[1].name).to eq(:code2)
       expect(returns_obj.params_ordered[1].validator.class).to eq(Apipie::Validator::EnumValidator)
-      expect(returns_obj.params_ordered[1].only_in_response).to be_truthy
+      expect(returns_obj.params_ordered[1].response_only?).to be_truthy
     end
 
   end
