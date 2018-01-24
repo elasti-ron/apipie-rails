@@ -1,27 +1,15 @@
+#
+# The PetsController defined here provides examples for different ways
+# in which the 'returns' DSL directive can be used with the existing
+# Apipie DSL elements 'param' and 'param_group'
+#
+
 class PetsController < ApplicationController
   resource_description do
     description 'A controller to test "returns"'
     short 'Pets'
     path '/pets'
   end
-
-  #-----------------------------------------------------------
-  # a param_group for reuse below
-  #-----------------------------------------------------------
-  def_param_group :pet do
-    property :pet_name, String, :desc => "Name of pet", :required => false
-    property :animal_type, ['dog','cat','iguana','kangaroo'], :desc => "Type of pet"   # required by default, because this is a 'property'
-  end
-
-  #-----------------------------------------------------------
-  #  Method returning an array
-  #-----------------------------------------------------------
-  api :GET, "/pets", "Get all pets"
-  returns :array_of => :pet, :desc => "list of pets"
-  def index
-    render :plain => "all pets"
-  end
-
 
   #-----------------------------------------------------------
   # simple 'returns' example: a method that returns a pet record
@@ -35,9 +23,16 @@ class PetsController < ApplicationController
     render :plain => "showing pet properties"
   end
 
+
   #-----------------------------------------------------------
-  # same example, but properties are defined in a param group
+  # same example as above, but this time the properties are defined
+  # in a param group
   #-----------------------------------------------------------
+  def_param_group :pet do
+    property :pet_name, String, :desc => "Name of pet", :required => false
+    property :animal_type, ['dog','cat','iguana','kangaroo'], :desc => "Type of pet"   # required by default, because this is a 'property'
+  end
+
   api :GET, "/pets/:id/as_param_group_of_properties", "Get a pet record"
   returns :pet, "The pet"
   def show_as_param_group_of_properties
@@ -45,13 +40,27 @@ class PetsController < ApplicationController
   end
 
   #-----------------------------------------------------------
+  #  Method returning an array of the :pet param_group
+  #-----------------------------------------------------------
+  api :GET, "/pets", "Get all pets"
+  returns :array_of => :pet, :desc => "list of pets"
+  def index
+    render :plain => "all pets"
+  end
+
+
+  #-----------------------------------------------------------
   # mixing request/response and response-only parameters
+  #
+  # the param_group :pet_with_id has several parameters which are
+  # not expectd in the request, but would show up in the response
   #-----------------------------------------------------------
   def_param_group :pet_with_id do
     param :pet_id, Integer, :desc => "id of pet", :required => true
     param :pet_name, String, :desc => "Name of pet", :required => false, :only_in => :response
     property :animal_type, ['dog','cat','iguana','kangaroo'], :desc => "Type of pet"   # this is implicitly :only_in => :response
   end
+
   api :GET, "/pets/pet_by_id", "Get a pet record with the pet id in the body of the request"
   param_group :pet_with_id # only the pet_id is expected to be in here
   returns :param_group => :pet_with_id, :code => 200

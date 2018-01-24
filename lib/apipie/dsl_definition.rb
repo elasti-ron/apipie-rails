@@ -401,15 +401,25 @@ module Apipie
 
         code = options[:code] || 200
         scope = options[:scope] || _default_param_group_scope
-        param_group_name = options[:param_group] || options[:array_of]
+        descriptor = options[:param_group] || options[:array_of]
 
         if block.nil?
-          block = Apipie.get_param_group(scope, param_group_name) if param_group_name
-        elsif param_group_name
+          if descriptor.is_a? ResponseDescriptionAdapter
+            adapter = descriptor
+          elsif descriptor.respond_to? :describe_own_properties
+            adapter = ResponseDescriptionAdapter.from_self_describing_class(descriptor)
+          else
+            begin
+                block = Apipie.get_param_group(scope, descriptor) if descriptor
+            rescue
+                raise "No param_group or self-describing class named #{descriptor}"
+            end
+          end
+        elsif descriptor
           raise "cannot specify both block and param_group"
         end
 
-        _apipie_dsl_data[:returns][code] = [options, scope, block]
+        _apipie_dsl_data[:returns][code] = [options, scope, block, adapter]
       end
 
       # where the group definition should be looked up when no scope

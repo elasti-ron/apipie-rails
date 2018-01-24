@@ -33,7 +33,26 @@ module Rails4Compatibility
   end
 end
 
-RSpec::Matchers.define :match_param_structure do |expected|
+
+#
+# Matcher to validate the hierarchy of fields described in an internal 'returns' object (without checking their type)
+#
+# For example, code such as:
+#           returns_obj = Apipie.get_resource_description(...)._methods.returns.detect{|e| e.code=200})
+#           expect(returns_obj).to match_param_structure([:pet_name, :animal_type, :pet_measurements => [:weight, :height]])
+#
+# will verify that the payload structure described for the response of return code 200 is:
+#           {
+#             "pet_name": <any>,
+#             "animal_type": <any>,
+#             "pet_measurements": {
+#                 "weight": <any>,
+#                 "height": <any>
+#             }
+#           }
+#
+#
+RSpec::Matchers.define :match_field_structure do |expected|
   @last_message = nil
 
   match do |actual|
@@ -72,6 +91,43 @@ RSpec::Matchers.define :match_param_structure do |expected|
 end
 
 
+
+#
+# Matcher to validate the properties (name, type and options) of a single field in the
+# internal representation of a swagger schema
+#
+# For example, code such as:
+#       schema = swagger[:paths][<path>][<method>][:responses][<code>][:schema]
+#       expect(schema).to have_field(:pet_name, 'string', {:required => false})
+#
+# will verify that the selected response schema includes a required string field called 'pet_name'
+#
+RSpec::Matchers.define :have_field do |name, type, opts={}|
+  def fail(msg)
+    @fail_message = msg
+    false
+  end
+
+  @fail_message = ""
+
+  failure_message do |actual|
+    @fail_message
+  end
+
+  match do |actual|
+    return fail("expected schema to have type 'object' (got '#{actual[:type]}')") if (actual[:type]) != 'object'
+    return fail("expected schema to include param named '#{name}' (got #{actual[:properties].keys})") if (prop = actual[:properties][name]).nil?
+    return fail("expected param '#{name}' to have type '#{type}' (got '#{prop[:type]}')") if prop[:type] != type
+    return fail("expected param '#{name}' to have description '#{opts[:description]}' (got '#{prop[:description]}')") if opts[:description] && prop[:description] != opts[:description]
+    return fail("expected param '#{name}' to have enum '#{opts[:enum]}' (got #{prop[:enum]})") if opts[:enum] && prop[:enum] != opts[:enum]
+    if !opts.include?(:required) || opts[:required] == true
+      return fail("expected param '#{name}' to be required") unless actual[:required].include?(name)
+    else
+      return fail("expected param '#{name}' to be optional") if actual[:required].include?(name)
+    end
+    true
+  end
+end
 
 # Requires supporting ruby files with custom matchers and macros, etc,
 # in spec/support/ and its subdirectories.

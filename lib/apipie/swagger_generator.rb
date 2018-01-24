@@ -272,7 +272,7 @@ module Apipie
         return "string"
       end
 
-      if v.class == Apipie::Validator::EnumValidator
+      if v.class == Apipie::Validator::EnumValidator || (v.respond_to?(:is_enum?) && v.is_enum?)
         if v.values - [true, false] == [] && [true, false] - v.values == []
           warn_inferring_boolean(param_desc.name)
           return "boolean"
@@ -403,7 +403,7 @@ module Apipie
         swagger_def[:required] = param_desc.required if param_desc.required
       end
 
-      save_field(swagger_def, :description, param_desc.options, :desc, true)
+      save_field(swagger_def, :description, param_desc.options, :desc, true) unless param_desc.options[:desc].nil?
       save_field(swagger_def, :default, param_desc.options, :default_value)
 
       if param_desc.respond_to?(:_gen_added_from_path) && !param_desc.required

@@ -49,20 +49,21 @@ module Apipie
     attr_reader :code, :description, :scope, :type_ref, :hash_validator, :is_array_of
 
     def self.from_dsl_data(method_description, code, args)
-      options, scope, block = args
+      options, scope, block, adapter = args
 
       Apipie::ResponseDescription.new(method_description,
                                       code,
                                       options,
                                       scope,
-                                      block)
+                                      block,
+                                      adapter)
     end
 
     def is_array?
       @is_array_of != false
     end
 
-    def initialize(method_description, code, options, scope, block)
+    def initialize(method_description, code, options, scope, block, adapter)
 
       @type_ref = options[:param_group]
       @is_array_of = options[:array_of] || false
@@ -85,7 +86,11 @@ module Apipie
       end
       @scope = scope
 
-      @response_object = ResponseObject.new(method_description, scope, block)
+      if adapter
+        @response_object = adapter
+      else
+        @response_object = ResponseObject.new(method_description, scope, block)
+      end
     end
 
     def param_description
