@@ -5,10 +5,13 @@ module Apipie
       include Apipie::DSL::Base
       include Apipie::DSL::Param
 
+      attr_accessor :additional_properties
+
       def initialize(method_description, scope, block)
         @method_description = method_description
         @scope = scope
         @param_group = {scope: scope}
+        @additional_properties = false
 
         self.instance_exec(&block) if block
 
@@ -92,6 +95,8 @@ module Apipie
       else
         @response_object = ResponseObject.new(method_description, scope, block)
       end
+
+      @response_object.additional_properties ||= options[:additional_properties]
     end
 
     def param_description
@@ -102,12 +107,18 @@ module Apipie
       @response_object.params_ordered
     end
 
+    def additional_properties
+      !!@response_object.additional_properties
+    end
+    alias :allow_additional_properties :additional_properties
+
     def to_json(lang=nil)
       {
           :code => code,
           :description => description,
           :is_array => is_array?,
           :returns_object => params_ordered.map{ |param| param.to_json(lang).tap{|h| h.delete(:validations) }}.flatten,
+          :additional_properties => additional_properties,
       }
     end
   end

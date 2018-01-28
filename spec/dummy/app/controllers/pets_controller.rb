@@ -143,5 +143,194 @@ class PetsController < ApplicationController
     render :plain => "please disinfect your pet"
   end
 
+
+  #=======================================================================
+  # Methods for testing response validation
+  #=======================================================================
+
+
+  #-----------------------------------------------------------
+  # A method which returns the response as described
+  #-----------------------------------------------------------
+  api!
+  returns :code => 200 do
+    property :a_number, Integer
+    property :an_optional_number, Integer, :required=>false
+  end
+  def return_and_validate_expected_response
+    result =  {
+        a_number: 3
+    }
+    render :json => result
+  end
+
+  #-----------------------------------------------------------
+  # A method which returns a null value in the response
+  #-----------------------------------------------------------
+  api!
+  returns :code => 200 do
+    property :a_number, Integer
+    property :an_optional_number, Integer, :required=>false
+  end
+  def return_and_validate_expected_response_with_null
+    result =  {
+        a_number: nil
+    }
+    render :json => result
+  end
+
+  #-----------------------------------------------------------
+  # A method which returns a null value in the response instead of an object
+  #-----------------------------------------------------------
+  api!
+  returns :code => 200 do
+    property :an_object, Hash do
+      property :an_optional_number, Integer, :required=>false
+    end
+  end
+  def return_and_validate_expected_response_with_null_object
+    result =  {
+        an_object: nil
+    }
+    render :json => result
+  end
+
+  #-----------------------------------------------------------
+  # A method which returns an array response as described
+  #-----------------------------------------------------------
+  def_param_group :two_numbers do
+    property :a_number, Integer
+    property :an_optional_number, Integer, :required=>false
+  end
+
+  api!
+  returns :code => 200, :array_of => :two_numbers
+  def return_and_validate_expected_array_response
+    result =  [{
+                   a_number: 3
+               }]
+    render :json => result
+  end
+
+  #-----------------------------------------------------------
+  # A method which returns an array response when it is expected to return an object
+  # (note that response code is set here to 201)
+  #-----------------------------------------------------------
+  api!
+  returns :two_numbers, :code => 201
+  def return_and_validate_unexpected_array_response
+    result =  [{
+                   a_number: 3
+               }]
+    render :status => 201, :json => result
+  end
+
+  #-----------------------------------------------------------
+  # A method which has a response that does not match the output type
+  #-----------------------------------------------------------
+  api!
+  returns :code => 200 do
+    property :a_number, String
+  end
+  def return_and_validate_type_mismatch
+    result =  {
+        a_number: 3
+    }
+    render :json => result
+  end
+
+
+  #-----------------------------------------------------------
+  # A method which has a response with a missing field
+  #-----------------------------------------------------------
+  api!
+  returns :code => 200 do
+    property :a_number, Integer
+    property :another_number, Integer
+  end
+  def return_and_validate_missing_field
+    result =  {
+        a_number: 3
+    }
+    render :json => result
+  end
+
+
+  #-----------------------------------------------------------
+  # A method which has a response with an extra property
+  # (should raise a validation error by default)
+  #-----------------------------------------------------------
+  api!
+  returns :code => 200 do
+    property :a_number, Integer
+  end
+  def return_and_validate_extra_property
+    result =  {
+        a_number: 3,
+        another_number: 4
+    }
+    render :json => result
+  end
+
+
+  #-----------------------------------------------------------
+  # A method which has a response with an extra property, but 'additional_properties' is specified
+  # (should not raise a validation error by default)
+  #-----------------------------------------------------------
+  api!
+  returns :code => 200, :additional_properties => true do
+    property :a_number, Integer
+  end
+  def return_and_validate_allowed_extra_property
+    result =  {
+        a_number: 3,
+        another_number: 4
+    }
+    render :json => result
+  end
+
+  #-----------------------------------------------------------
+  # Sub-object in response has an extra property. 'additional_properties' is specified on the response, but not on the object
+  # (should raise a validation error by default)
+  #-----------------------------------------------------------
+  api!
+  returns :code => 200, :additional_properties => true do
+    property :an_object, Hash do
+      property :a_number, Integer
+    end
+  end
+  def sub_object_invalid_extra_property
+    result =  {
+        an_object: {
+            a_number: 2,
+            an_extra_number: 3
+        }
+    }
+    render :json => result
+  end
+
+
+  #-----------------------------------------------------------
+  # Sub-object in response has an extra property. 'additional_properties' is specified on the object, but not on the response
+  # (should not raise a validation error by default)
+  #-----------------------------------------------------------
+  api!
+  returns :code => 200, :additional_properties => false do
+    property :an_object, Hash, :additional_properties => true do
+      property :a_number, Integer
+    end
+  end
+  def sub_object_allowed_extra_property
+    result =  {
+        an_object: {
+            a_number: 2,
+            an_extra_number: 3
+        }
+    }
+    render :json => result
+  end
+
+
+
 end
 

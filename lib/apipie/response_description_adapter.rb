@@ -4,6 +4,29 @@ module Apipie
     Apipie::ResponseDescriptionAdapter::PropDesc.new(name, expected_type, options, sub_properties)
   end
 
+  def self.additional_properties(yesno)
+    Apipie::ResponseDescriptionAdapter::AdditionalPropertiesModifier.new(yesno)
+  end
+
+  class ResponseDescriptionAdapter
+    class Modifier
+      def apply(adapter)
+        raise "Modifer subclass must implement 'apply' method"
+      end
+    end
+
+    class AdditionalPropertiesModifier < Modifier
+      def initialize(additional_properties_allowed)
+        @additional_properties_allowed = additional_properties_allowed
+      end
+
+      def apply(adapter)
+        adapter.additional_properties =  @additional_properties_allowed
+      end
+    end
+  end
+
+
   class ResponseDescriptionAdapter
 
     #
@@ -12,6 +35,7 @@ module Apipie
     # To successfully masquerade as such, it needs to:
     #    respond_to?('name') and/or ['name'] returning the name of the parameter
     #    respond_to?('required') and/or ['required'] returning boolean
+    #    respond_to?('additional_properties') and/or ['additional_properties'] returning boolean
     #    respond_to?('validator') and/or ['validator'] returning 'nil' (so type is 'string'), or an object that:
     #           1) describes a type.  currently type is inferred as follows:
     #                 if validator.is_a? Apipie::Validator::EnumValidator -->  respond_to? 'values' (returns array).  Type is enum or boolean
@@ -21,6 +45,10 @@ module Apipie
     #                     array ==> swagger type is array and validator (FUTURE) should indicate type of element
 
     class PropDesc
+
+      def to_s
+        "PropDesc -- name: #{@name}  type: #{@expected_type} required: #{@required} options: #{@options} subprop count: #{@sub_properties.length} additional properties: #{@additional_properties}"
+      end
 
       #
       # a ResponseDescriptionAdapter::PropDesc::Validator pretends to be an Apipie::Validator
@@ -61,6 +89,7 @@ module Apipie
         @required = true
         @required = false if options[:required] == false
         @expected_type = expected_type
+        @additional_properties = false
 
         options[:desc] ||= options[:description]
         @description = options[:desc]
@@ -77,7 +106,13 @@ module Apipie
 
       def add_sub_property(prop_desc)
         raise "Only properties with expected_type 'object' can have sub-properties" unless @expected_type == 'object'
-        @sub_properties << prop_desc
+        if prop_desc.is_a? PropDesc
+          @sub_properties << prop_desc
+        elsif prop_desc.is_a? Modifier
+          prop_desc.apply(self)
+        else
+          raise "Unrecognized prop_desc type (#{prop_desc.class})"
+        end
       end
 
       def to_json(lang)
@@ -86,20 +121,24 @@ module Apipie
             required: required,
             validator: validator,
             description: description,
+            additional_properties: additional_properties,
             options: options
         }
       end
       attr_reader :name, :required, :expected_type, :options, :description
+      attr_accessor :additional_properties
+
       alias_method :desc, :description
 
       def validator
         Validator.new(@expected_type, options[:values], @sub_properties)
       end
     end
+  end
 
+  #======================================================================
 
-    #======================================================================
-
+  class ResponseDescriptionAdapter
 
     def self.from_self_describing_class(cls)
       adapter = ResponseDescriptionAdapter.new
@@ -110,6 +149,13 @@ module Apipie
 
     def initialize
       @property_descs = []
+      @additional_properties = false
+    end
+
+    attr_accessor :additional_properties
+
+    def allow_additional_properties
+      additional_properties
     end
 
     def to_json
@@ -117,7 +163,13 @@ module Apipie
     end
 
     def add(prop_desc)
-      @property_descs << prop_desc
+      if prop_desc.is_a? PropDesc
+        @property_descs << prop_desc
+      elsif prop_desc.is_a? Modifier
+        prop_desc.apply(self)
+      else
+        raise "Unrecognized prop_desc type (#{prop_desc.class})"
+      end
     end
 
     def add_property_descriptions(prop_descs)
@@ -132,6 +184,10 @@ module Apipie
 
     def params_ordered
       @property_descs
+    end
+
+    def is_array?
+      false
     end
   end
 end
