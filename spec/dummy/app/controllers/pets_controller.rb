@@ -152,7 +152,7 @@ class PetsController < ApplicationController
   #-----------------------------------------------------------
   # A method which returns the response as described
   #-----------------------------------------------------------
-  api :GET, "/pets/return_and_validate_expected_response", "did any of the pets owned by the given user vote?"
+  api!
   returns :code => 200 do
     property :a_number, Integer
     property :an_optional_number, Integer, :required=>false
@@ -165,9 +165,39 @@ class PetsController < ApplicationController
   end
 
   #-----------------------------------------------------------
+  # A method which returns an array response as described
+  #-----------------------------------------------------------
+  def_param_group :two_numbers do
+    property :a_number, Integer
+    property :an_optional_number, Integer, :required=>false
+  end
+
+  api!
+  returns :code => 200, :array_of => :two_numbers
+  def return_and_validate_expected_array_response
+    result =  [{
+                   a_number: 3
+               }]
+    render_with_validation :json => result
+  end
+
+  #-----------------------------------------------------------
+  # A method which returns an array response when it is expected to return an object
+  # (note that response code is set here to 201)
+  #-----------------------------------------------------------
+  api!
+  returns :two_numbers, :code => 201
+  def return_and_validate_unexpected_array_response
+    result =  [{
+                   a_number: 3
+               }]
+    render_with_validation :status => 201, :json => result
+  end
+
+  #-----------------------------------------------------------
   # A method which has a response that does not match the output type
   #-----------------------------------------------------------
-  api :GET, "/pets/return_and_validate_type_mismatch", "did any of the pets owned by the given user vote?"
+  api!
   returns :code => 200 do
     property :a_number, String
   end
@@ -182,7 +212,7 @@ class PetsController < ApplicationController
   #-----------------------------------------------------------
   # A method which has a response with a missing field
   #-----------------------------------------------------------
-  api :GET, "/pets/return_and_validate_missing_field", "did any of the pets owned by the given user vote?"
+  api!
   returns :code => 200 do
     property :a_number, Integer
     property :another_number, Integer
@@ -198,7 +228,7 @@ class PetsController < ApplicationController
   #-----------------------------------------------------------
   # A method which has a response with an extra field
   #-----------------------------------------------------------
-  api :GET, "/pets/return_and_validate_extra_field", "did any of the pets owned by the given user vote?"
+  api!
   returns :code => 200 do
     property :a_number, Integer
   end

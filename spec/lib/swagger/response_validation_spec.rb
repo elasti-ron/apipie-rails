@@ -13,6 +13,11 @@ RSpec.describe PetsController, :type => :controller do
     get :return_and_validate_expected_response, {format: :json}
   end
 
+  it "does not detect error when rendered output (array) matches the described response" do
+    expect(controller).not_to receive(:apipie_response_validation_error)
+    get :return_and_validate_expected_array_response, {format: :json}
+  end
+
   it "detects error when a response field has the wrong type" do
     expect(controller).to receive(:apipie_response_validation_error).with("pets", "return_and_validate_type_mismatch", "200")
     get :return_and_validate_type_mismatch, {format: :json}
@@ -26,6 +31,12 @@ RSpec.describe PetsController, :type => :controller do
   it "detects error when a response has an extra field and 'swagger_allow_additional_properties_in_response' is false" do
     expect(controller).to receive(:apipie_response_validation_error).with("pets", "return_and_validate_extra_field", "200")
     get :return_and_validate_extra_field, {format: :json}
+  end
+
+  it "detects error when a response has is array instead of object" do
+    # note: this action returns HTTP 201, not HTTP 200!
+    expect(controller).to receive(:apipie_response_validation_error).with("pets", "return_and_validate_unexpected_array_response", "201")
+    get :return_and_validate_unexpected_array_response, {format: :json}
   end
 
   it "does not detect error when a response has an extra field and 'swagger_allow_additional_properties_in_response' is true" do

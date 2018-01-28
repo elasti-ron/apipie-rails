@@ -177,7 +177,7 @@ module Apipie
       @swagger_suppress_warnings = false #[105,100,102]
       @swagger_api_host = "localhost:3000"
       @swagger_generate_x_computed_id_field = false
-      @swagger_allow_additional_properties_in_response = true
+      @swagger_allow_additional_properties_in_response = false
       @response_validation = false
     end
   end
