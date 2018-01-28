@@ -26,6 +26,11 @@ Dummy::Application.routes.draw do
           get :contributors
         end
       end
+
+      get "/pets/return_and_validate_expected_response" => "pets#return_and_validate_expected_response"
+      get "/pets/return_and_validate_type_mismatch" => "pets#return_and_validate_type_mismatch"
+      get "/pets/return_and_validate_missing_field" => "pets#return_and_validate_missing_field"
+      get "/pets/return_and_validate_extra_field" => "pets#return_and_validate_extra_field"
     end
 
     apipie

@@ -4,3 +4,4 @@ gemspec
 
 gem 'rails', '~> 4.1.0'
 gem 'mime-types', '~> 2.99.3'
+gem 'json-schema', '~> 2.8.0'

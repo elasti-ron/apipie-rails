@@ -143,5 +143,74 @@ class PetsController < ApplicationController
     render :plain => "please disinfect your pet"
   end
 
+
+  #=======================================================================
+  # Methods for testing response validation
+  #=======================================================================
+
+
+  #-----------------------------------------------------------
+  # A method which returns the response as described
+  #-----------------------------------------------------------
+  api :GET, "/pets/return_and_validate_expected_response", "did any of the pets owned by the given user vote?"
+  returns :code => 200 do
+    property :a_number, Integer
+    property :an_optional_number, Integer, :required=>false
+  end
+  def return_and_validate_expected_response
+    result =  {
+        a_number: 3
+    }
+    render_with_validation :json => result
+  end
+
+  #-----------------------------------------------------------
+  # A method which has a response that does not match the output type
+  #-----------------------------------------------------------
+  api :GET, "/pets/return_and_validate_type_mismatch", "did any of the pets owned by the given user vote?"
+  returns :code => 200 do
+    property :a_number, String
+  end
+  def return_and_validate_type_mismatch
+    result =  {
+        a_number: 3
+    }
+    render_with_validation :json => result
+  end
+
+
+  #-----------------------------------------------------------
+  # A method which has a response with a missing field
+  #-----------------------------------------------------------
+  api :GET, "/pets/return_and_validate_missing_field", "did any of the pets owned by the given user vote?"
+  returns :code => 200 do
+    property :a_number, Integer
+    property :another_number, Integer
+  end
+  def return_and_validate_missing_field
+    result =  {
+        a_number: 3
+    }
+    render_with_validation :json => result
+  end
+
+
+  #-----------------------------------------------------------
+  # A method which has a response with an extra field
+  #-----------------------------------------------------------
+  api :GET, "/pets/return_and_validate_extra_field", "did any of the pets owned by the given user vote?"
+  returns :code => 200 do
+    property :a_number, Integer
+  end
+  def return_and_validate_extra_field
+    result =  {
+        a_number: 3,
+        another_number: 4
+    }
+    render_with_validation :json => result
+  end
+
+
+
 end
 

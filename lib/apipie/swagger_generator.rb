@@ -297,6 +297,26 @@ module Apipie
     # Responses
     #--------------------------------------------------------------------------
 
+    def json_schema_for_method_response(method, return_code)
+      for response in method.returns
+        return response_schema(response) if response.code.to_s == return_code.to_s
+      end
+      nil
+    end
+
+    def response_schema(response)
+      schema = json_schema_obj_from_params_array(response.params_ordered)
+
+      if response.is_array? && schema
+        schema = {
+            type: "array",
+            items: schema
+        }
+      end
+
+      schema
+    end
+
     def swagger_responses_hash_for_method(method)
       result = {}
 
@@ -306,18 +326,11 @@ module Apipie
       end
 
       for response in method.returns
-        schema = json_schema_obj_from_params_array(response.params_ordered)
-
-        if response.is_array? && schema
-          schema = {
-              type: "array",
-              items: schema
-          }
-        end
-
         swagger_response_block = {
-          description: response.description
+            description: response.description
         }
+
+        schema = response_schema(response)
         swagger_response_block[:schema] = schema if schema
 
         result[response.code] = swagger_response_block
@@ -433,6 +446,7 @@ module Apipie
 
       result = {type: "object"}
       result[:properties] = param_defs
+      result[:additionalProperties] = false unless Apipie.configuration.swagger_allow_additional_properties_in_response
       result[:required] = required_params if required_params.length > 0
 
       param_defs.length > 0 ? result : nil

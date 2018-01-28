@@ -18,7 +18,14 @@ module Apipie
     app.to_swagger_json(version, resource_name, method_name, lang, clear_warnings)
   end
 
-  # all calls delegated to Apipie::Application instance
+  def self.json_schema_for_method_response(controller_name, method_name, return_code)
+    # note: this does not support versions (only the default version is queried)!
+    version ||= Apipie.configuration.default_version
+    app.json_schema_for_method_response(version, controller_name, method_name, return_code)
+  end
+
+
+    # all calls delegated to Apipie::Application instance
   def self.method_missing(method, *args, &block)
     app.respond_to?(method) ? app.send(method, *args, &block) : super
   end
