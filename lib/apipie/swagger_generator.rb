@@ -13,6 +13,7 @@ module Apipie
 
     def initialize(apipie)
       @apipie = apipie
+      @issued_warnings = []
     end
 
     def params_in_body?
@@ -262,6 +263,45 @@ module Apipie
       http_method.downcase + path.gsub(/\//,'_').gsub(/:(\w+)/, '\1').gsub(/_$/,'')
     end
 
+    class SwaggerTypeWithFormat
+      attr_reader :str_format
+      def initialize(type, str_format)
+        @type = type
+        @str_format = str_format
+      end
+
+      def to_s
+        @type
+      end
+
+      def ==(other)
+        other.to_s == self.to_s
+      end
+    end
+
+    def lookup
+      @lookup ||= {
+        numeric: "number",
+        hash: "object",
+        array: "array",
+
+        # see https://github.com/OAI/OpenAPI-Specification/blob/master/versions/2.0.md#data-types
+        integer: SwaggerTypeWithFormat.new("integer", "int32"),
+        long: SwaggerTypeWithFormat.new("integer", "int64"),
+        number: SwaggerTypeWithFormat.new("number", nil),  # here just for completeness
+        float: SwaggerTypeWithFormat.new("number", "float"),
+        double: SwaggerTypeWithFormat.new("number", "double"),
+        string: SwaggerTypeWithFormat.new("string", nil),  # here just for completeness
+        byte: SwaggerTypeWithFormat.new("string", "byte"),
+        binary: SwaggerTypeWithFormat.new("string", "binary"),
+        boolean: SwaggerTypeWithFormat.new("boolean", nil),  # here just for completeness
+        date: SwaggerTypeWithFormat.new("string", "date"),
+        dateTime: SwaggerTypeWithFormat.new("string", "date-time"),
+        password: SwaggerTypeWithFormat.new("string", "password"),
+      }
+    end
+
+
     def swagger_param_type(param_desc)
       if param_desc.nil?
         raise("problem")
@@ -283,11 +323,6 @@ module Apipie
         # pp v
       end
 
-      lookup = {
-          numeric: "number",
-          hash: "object",
-          array: "array"
-      }
 
       return lookup[v.expected_type.to_sym] || v.expected_type
     end
@@ -364,7 +399,12 @@ module Apipie
 
       swagger_def = {}
       swagger_def[:name] = name if !name.nil?
-      swagger_def[:type] = swagger_param_type(param_desc)
+
+      swg_param_type = swagger_param_type(param_desc)
+      swagger_def[:type] = swg_param_type.to_s
+      if (swg_param_type.is_a? SwaggerTypeWithFormat) && !swg_param_type.str_format.nil?
+        swagger_def[:format] = swg_param_type.str_format
+      end
 
       if swagger_def[:type] == "array"
         swagger_def[:items] = {type: "string"} # TODO: add support for arrays of non-string items
