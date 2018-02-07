@@ -297,15 +297,20 @@ module Apipie
     # Responses
     #--------------------------------------------------------------------------
 
-    def json_schema_for_method_response(method, return_code)
+    def json_schema_for_method_response(method, return_code, allow_nulls)
       for response in method.returns
-        return response_schema(response) if response.code.to_s == return_code.to_s
+        return response_schema(response, allow_nulls) if response.code.to_s == return_code.to_s
       end
       nil
     end
 
-    def response_schema(response)
-      schema = json_schema_obj_from_params_array(response.params_ordered)
+    def json_schema_for_self_describing_class(cls, allow_nulls)
+      adapter = ResponseDescriptionAdapter.from_self_describing_class(cls)
+      response_schema(adapter, allow_nulls)
+    end
+
+    def response_schema(response, allow_nulls=false)
+      schema = json_schema_obj_from_params_array(response.params_ordered, allow_nulls)
 
       if response.is_array? && schema
         schema = {
@@ -382,7 +387,7 @@ module Apipie
     # The core routine for creating a swagger parameter definition block.
     # The output is slightly different when the parameter is inside a schema block.
     #--------------------------------------------------------------------------
-    def swagger_atomic_param(param_desc, in_schema, name=nil)
+    def swagger_atomic_param(param_desc, in_schema, name, allow_nulls)
       def save_field(entry, openapi_key, v, apipie_key=openapi_key, translate=false)
         if v.key?(apipie_key)
           if translate
@@ -409,6 +414,10 @@ module Apipie
       if swagger_def[:type] == "object"  # we only get here if there is no specification of properties for this object
         swagger_def[:additionalProperties] = true
         warn_hash_without_internal_typespec(param_desc.name)
+      end
+
+      if allow_nulls && swagger_def[:type] != "object" && swagger_def[:type] != "array"
+        swagger_def[:type] = [swagger_def[:type], "null"]
       end
 
       if !in_schema
@@ -441,8 +450,8 @@ module Apipie
     end
 
 
-    def json_schema_obj_from_params_array(params_array)
-      (param_defs, required_params) = json_schema_param_defs_from_params_array(params_array)
+    def json_schema_obj_from_params_array(params_array, allow_nulls = false)
+      (param_defs, required_params) = json_schema_param_defs_from_params_array(params_array, allow_nulls)
 
       result = {type: "object"}
       result[:properties] = param_defs
@@ -462,7 +471,7 @@ module Apipie
       ref_to(name.to_sym)
     end
 
-    def json_schema_param_defs_from_params_array(params_array)
+    def json_schema_param_defs_from_params_array(params_array, allow_nulls = false)
       param_defs = {}
       required_params = []
 
@@ -480,10 +489,10 @@ module Apipie
         param_type = swagger_param_type(param_desc)
 
         if param_type == "object" && param_desc.validator.params_ordered
-          schema = json_schema_obj_from_params_array(param_desc.validator.params_ordered)
+          schema = json_schema_obj_from_params_array(param_desc.validator.params_ordered, allow_nulls)
           param_defs[param_desc.name.to_sym] = schema if !schema.nil?
         else
-          param_defs[param_desc.name.to_sym] = swagger_atomic_param(param_desc, true)
+          param_defs[param_desc.name.to_sym] = swagger_atomic_param(param_desc, true, nil, allow_nulls)
         end
       end
 
@@ -561,7 +570,7 @@ module Apipie
             warn_param_ignored_in_form_data(desc.name)
           end
         else
-          param_entry = swagger_atomic_param(desc, false, name)
+          param_entry = swagger_atomic_param(desc, false, name, false)
           if param_entry[:required]
             swagger_params_array.unshift(param_entry)
           else

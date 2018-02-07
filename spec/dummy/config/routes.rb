@@ -33,6 +33,8 @@ Dummy::Application.routes.draw do
       get "/pets/return_and_validate_missing_field" => "pets#return_and_validate_missing_field"
       get "/pets/return_and_validate_extra_field" => "pets#return_and_validate_extra_field"
       get "/pets/return_and_validate_unexpected_array_response" => "pets#return_and_validate_unexpected_array_response"
+      get "/pets/return_and_validate_expected_response_with_null" => "pets#return_and_validate_expected_response_with_null"
+
     end
 
     apipie

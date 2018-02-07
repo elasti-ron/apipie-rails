@@ -10,7 +10,7 @@ module Apipie
       :persist_show_in_doc, :authorize,
       :swagger_include_warning_tags, :swagger_content_type_input, :swagger_json_input_uses_refs,
       :swagger_suppress_warnings, :swagger_api_host, :swagger_generate_x_computed_id_field, :response_validation,
-      :swagger_allow_additional_properties_in_response
+      :response_validation_verbose, :swagger_allow_additional_properties_in_response
 
     alias_method :validate?, :validate
     alias_method :required_by_default?, :required_by_default
@@ -178,7 +178,8 @@ module Apipie
       @swagger_api_host = "localhost:3000"
       @swagger_generate_x_computed_id_field = false
       @swagger_allow_additional_properties_in_response = false
-      @response_validation = false
+      @response_validation = false # set to :error to raise an exception on mismatch
+      @response_validation_verbose = true
     end
   end
 end

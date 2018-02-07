@@ -22,6 +22,10 @@ module Apipie
 
     class PropDesc
 
+      def to_s
+        "PropDesc -- name: #{@name}  type: #{@expected_type} required: #{@required} options: #{@options} subprop count: #{@sub_properties.length}"
+      end
+
       #
       # a ResponseDescriptionAdapter::PropDesc::Validator pretends to be an Apipie::Validator
       #
@@ -132,6 +136,10 @@ module Apipie
 
     def params_ordered
       @property_descs
+    end
+
+    def is_array?
+      false
     end
   end
 end

@@ -58,4 +58,18 @@ module Apipie
     end
   end
 
+  class ResponseDoesNotMatchSwaggerSchema < Error
+    def initialize(controller_name, method_name, response_code, error_message, schema, returned_object)
+      @controller_name = controller_name
+      @method_name = method_name
+      @response_code = response_code
+      @error_message = error_message
+      @schema = schema
+      @returned_object = returned_object
+    end
+
+    def to_s
+      "Response does not match swagger schema (#{@controller_name}##{@method_name} #{@response_code}): #{@error_message}\nSchema: #{JSON(@schema)}\nReturned object: #{@returned_object}"
+    end
+  end
 end

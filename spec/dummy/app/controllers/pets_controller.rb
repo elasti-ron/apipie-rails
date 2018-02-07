@@ -165,6 +165,21 @@ class PetsController < ApplicationController
   end
 
   #-----------------------------------------------------------
+  # A method which returns a null value in the response
+  #-----------------------------------------------------------
+  api!
+  returns :code => 200 do
+    property :a_number, Integer
+    property :an_optional_number, Integer, :required=>false
+  end
+  def return_and_validate_expected_response_with_null
+    result =  {
+        a_number: nil
+    }
+    render_with_validation :json => result
+  end
+
+  #-----------------------------------------------------------
   # A method which returns an array response as described
   #-----------------------------------------------------------
   def_param_group :two_numbers do
