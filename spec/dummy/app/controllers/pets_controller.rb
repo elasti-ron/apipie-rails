@@ -9,6 +9,13 @@ class PetsController < ApplicationController
     description 'A controller to test "returns"'
     short 'Pets'
     path '/pets'
+
+    param :common_param, Integer, :desc => "A param that can optionally be passed to all Pet methods", :required => false
+
+    returns :code => 404 do
+      property :error_message, String, "description of the error"
+    end
+
   end
 
   #-----------------------------------------------------------
@@ -18,6 +25,9 @@ class PetsController < ApplicationController
   returns :code => 200 do
     property :pet_name, String, :desc => "Name of pet", :required => false
     property :animal_type, ['dog','cat','iguana','kangaroo'], :desc => "Type of pet"   # required by default, because this is a 'property'
+  end
+  returns :code => 404 do
+    property :another_error_message, String, :desc => "Overriding the response description from the Pets resource"
   end
   def show_as_properties
     render :plain => "showing pet properties"
