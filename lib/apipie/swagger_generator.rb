@@ -345,7 +345,14 @@ module Apipie
     end
 
     def response_schema(response, allow_nulls=false)
-      schema = json_schema_obj_from_params_array(response.params_ordered, allow_nulls)
+      begin
+        # no need to warn about "missing default value for optional param" when processing response definitions
+        prev_value = @disable_default_value_warning
+        @disable_default_value_warning = true
+        schema = json_schema_obj_from_params_array(response.params_ordered, allow_nulls)
+      ensure
+        @disable_default_value_warning = prev_value
+      end
 
       if response.is_array? && schema
         schema = {
@@ -474,7 +481,7 @@ module Apipie
       end
 
       if !swagger_def[:required] && !swagger_def.key?(:default)
-        warn_optional_without_default_value(param_desc.name)
+        warn_optional_without_default_value(param_desc.name) unless @disable_default_value_warning
       end
 
       swagger_def

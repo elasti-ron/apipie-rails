@@ -27,6 +27,7 @@ module ActionController
         end
 
         if !valid
+          puts "Validation error.  Schema: #{schema}"
           apipie_response_validation_error(controller_name, action_name, response.code, error_msg, schema, response.body, raise_exception)
         end
 
