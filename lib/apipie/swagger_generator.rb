@@ -349,7 +349,7 @@ module Apipie
 
       if response.is_array? && schema
         schema = {
-            type: "array",
+            type: allow_nulls ? ["array","null"] : "array",
             items: schema
         }
       end
@@ -456,7 +456,7 @@ module Apipie
         warn_hash_without_internal_typespec(param_desc.name)
       end
 
-      if allow_nulls && swagger_def[:type] != "object" && swagger_def[:type] != "array"
+      if allow_nulls
         swagger_def[:type] = [swagger_def[:type], "null"]
       end
 
@@ -531,6 +531,9 @@ module Apipie
         if param_type == "object" && param_desc.validator.params_ordered
           schema = json_schema_obj_from_params_array(param_desc.validator.params_ordered, allow_nulls)
           param_defs[param_desc.name.to_sym] = schema if !schema.nil?
+          if allow_nulls
+            schema[:type] = ["object", "null"]
+          end
         else
           param_defs[param_desc.name.to_sym] = swagger_atomic_param(param_desc, true, nil, allow_nulls)
         end

@@ -23,6 +23,11 @@ RSpec.describe PetsController, :type => :controller do
     get :return_and_validate_expected_response_with_null, {format: :json}
   end
 
+  it "does not detect error when rendered output includes null (instead of an object) in the response" do
+    expect(controller).not_to receive(:apipie_response_validation_error)
+    get :return_and_validate_expected_response_with_null_object, {format: :json}
+  end
+
   it "detects error when a response field has the wrong type" do
     expect(controller).to receive(:apipie_response_validation_error).with("pets", "return_and_validate_type_mismatch", "200", any_args)
     get :return_and_validate_type_mismatch, {format: :json}
