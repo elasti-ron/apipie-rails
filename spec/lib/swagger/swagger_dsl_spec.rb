@@ -20,6 +20,20 @@ describe "Swagger Responses" do
     swagger[:paths][path][method][:responses][code]
   end
 
+  def swagger_params_for(path, method='get')
+    swagger[:paths][path][method][:parameters]
+  end
+
+  def swagger_param_by_name(param_name, path, method='get')
+    params = swagger_params_for(path, method)
+    matching = params.select{|p| p[:name] == param_name }
+    raise "multiple params named [#{param_name}] in swagger definition for [#{method } #{path}]" if matching.length > 1
+
+    nil if matching.length == 0
+
+    matching[0]
+  end
+
 
 
   describe PetsController do
@@ -138,6 +152,18 @@ describe "Swagger Responses" do
         expect(schema).to have_field(:pet_name, 'string', {:description => 'Name of pet', :required => false})
         expect(schema).to have_field(:animal_type, 'string', {:description => 'Type of pet', :enum => ['dog','cat','iguana','kangaroo']})
       end
+
+      it "creates a swagger definition with all input parameters" do
+        # a parameter defined for this method
+        expect(swagger_param_by_name(:pet_id, '/pets/pet_by_id')[:type]).to eq('number')
+
+        # a parameter defined for the resource
+        expect(swagger_param_by_name(:common_param, '/pets/pet_by_id')[:type]).to eq('number')
+
+        # a parameter defined in the controller's superclass
+        expect(swagger_param_by_name(:oauth, '/pets/pet_by_id')[:type]).to eq('string')
+      end
+
     end
 
     describe "PetsController#get_vote_by_owner_name" do

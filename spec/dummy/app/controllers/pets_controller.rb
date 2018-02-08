@@ -9,6 +9,7 @@ class PetsController < ApplicationController
     description 'A controller to test "returns"'
     short 'Pets'
     path '/pets'
+    param :common_param, Integer, :desc => "A param that can optionally be passed to all Pet methods", :required => false
   end
 
   #-----------------------------------------------------------
