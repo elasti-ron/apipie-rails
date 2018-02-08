@@ -67,6 +67,42 @@ describe "Swagger Responses" do
         expect(a_schema).to have_field(:pet_name, 'string', {:description => 'Name of pet', :required => false})
         expect(a_schema).to have_field(:animal_type, 'string', {:description => 'Type of pet', :enum => ['dog','cat','iguana','kangaroo']})
       end
+
+
+      it "should return code 401 with a String description field" do
+        # print_swagger
+        returns_obj = subject.returns.detect{|e| e.code == 404 }
+
+        # puts returns_obj.to_json
+        expect(returns_obj.code).to eq(404)
+        expect(returns_obj.is_array?).to eq(false)
+
+        expect(returns_obj).to match_field_structure([:error_message])
+      end
+
+
+      it "should return code 401 with a :reason field (defined in the superclass)" do
+        # print_swagger
+        returns_obj = subject.returns.detect{|e| e.code == 401 }
+
+        # puts returns_obj.to_json
+        expect(returns_obj.code).to eq(401)
+        expect(returns_obj.is_array?).to eq(false)
+
+        expect(returns_obj).to match_field_structure([:reason])
+      end
+
+      it 'should have the 404 response described in the swagger' do
+        print_swagger
+        response = swagger_response_for('/pets', 404)
+        expect(response[:description]).to eq("Not Found")
+
+        schema = response[:schema]
+        expect(schema[:type]).to eq("object")
+
+        expect(schema).to have_field(:error_message, 'string', {:description => 'description of the error', :required => true})
+      end
+
     end
 
     describe "PetsController#show_as_properties" do
@@ -91,6 +127,17 @@ describe "Swagger Responses" do
         schema = response[:schema]
         expect(schema).to have_field(:pet_name, 'string', {:description => 'Name of pet', :required => false})
         expect(schema).to have_field(:animal_type, 'string', {:description => 'Type of pet', :enum => ['dog','cat','iguana','kangaroo']})
+      end
+
+      it 'should have the 404 response description overridden' do
+        # print_swagger
+        returns_obj = subject.returns.detect{|e| e.code == 404 }
+
+        # puts returns_obj.to_json
+        expect(returns_obj.code).to eq(404)
+        expect(returns_obj.is_array?).to eq(false)
+
+        expect(returns_obj).to match_field_structure([:another_error_message])
       end
     end
 
@@ -126,11 +173,12 @@ describe "Swagger Responses" do
         desc._methods[:show_pet_by_id]
       end
 
-      it "should have only oauth (from ApplicationController) and pet_id as an input parameters" do
+      it "should have only oauth (from ApplicationController), common_param (from resource) and pet_id as an input parameters" do
         params_obj = subject.params_ordered
 
         expect(params_obj[0].name).to eq(:oauth)
-        expect(params_obj[1].name).to eq(:pet_id)
+        expect(params_obj[1].name).to eq(:common_param)
+        expect(params_obj[2].name).to eq(:pet_id)
       end
 
       it "should return code 200 with 'pet_id', pet_name' and 'animal_type'" do
