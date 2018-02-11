@@ -9,6 +9,7 @@ module Apipie
   class ParamDescription
 
     attr_reader :method_description, :name, :desc, :allow_nil, :allow_blank, :validator, :options, :metadata, :show, :as, :validations, :response_only
+    attr_reader :additional_properties
     attr_accessor :parent, :required
 
     alias_method :response_only?, :response_only
@@ -84,6 +85,8 @@ module Apipie
       end
 
       @validations = Array(options[:validations]).map {|v| concern_subst(Apipie.markup_to_html(v)) }
+
+      @additional_properties = @options[:additional_properties]
     end
 
     def from_concern?

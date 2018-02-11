@@ -361,6 +361,10 @@ module Apipie
         }
       end
 
+      if response.additional_properties
+        schema[:additionalProperties] = true
+      end
+
       schema
     end
 
@@ -537,10 +541,19 @@ module Apipie
 
         if param_type == "object" && param_desc.validator.params_ordered
           schema = json_schema_obj_from_params_array(param_desc.validator.params_ordered, allow_nulls)
-          param_defs[param_desc.name.to_sym] = schema if !schema.nil?
-          if allow_nulls
-            schema[:type] = ["object", "null"]
+          if param_desc.additional_properties
+            schema[:additionalProperties] = true
           end
+          if allow_nulls
+            # ideally we would write schema[:type] = ["object", "null"]
+            # but due to a bug in the json-schema gem, we need to use anyOf
+            # see https://github.com/ruby-json-schema/json-schema/issues/404
+            new_schema = {
+                anyOf: [schema, {type: "null"}]
+            }
+            schema = new_schema
+          end
+          param_defs[param_desc.name.to_sym] = schema if !schema.nil?
         else
           param_defs[param_desc.name.to_sym] = swagger_atomic_param(param_desc, true, nil, allow_nulls)
         end

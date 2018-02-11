@@ -16,6 +16,10 @@ module ActionController
 
         error_msg = "Apipie Response Validation failed: #{controller_name}##{action_name} response for HTTP code #{response_code} does not match declared structure"
 
+        # uncomment to help debug
+        # puts "schema: #{JSON(schema)}"
+        # puts "output: #{output}"
+
         if verbose
           validation_result = JSON::Validator.fully_validate(schema, output, :strict => false, :version => :draft4, :json => true)
           valid = (validation_result == [])

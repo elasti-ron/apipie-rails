@@ -257,16 +257,75 @@ class PetsController < ApplicationController
 
 
   #-----------------------------------------------------------
-  # A method which has a response with an extra field
+  # A method which has a response with an extra property
+  # (should raise a validation error by default)
   #-----------------------------------------------------------
   api!
   returns :code => 200 do
     property :a_number, Integer
   end
-  def return_and_validate_extra_field
+  def return_and_validate_extra_property
     result =  {
         a_number: 3,
         another_number: 4
+    }
+    render_with_validation :json => result
+  end
+
+
+  #-----------------------------------------------------------
+  # A method which has a response with an extra property, but 'additional_properties' is specified
+  # (should not raise a validation error by default)
+  #-----------------------------------------------------------
+  api!
+  returns :code => 200, :additional_properties => true do
+    property :a_number, Integer
+  end
+  def return_and_validate_allowed_extra_property
+    result =  {
+        a_number: 3,
+        another_number: 4
+    }
+    render_with_validation :json => result
+  end
+
+  #-----------------------------------------------------------
+  # Sub-object in response has an extra property. 'additional_properties' is specified on the response, but not on the object
+  # (should raise a validation error by default)
+  #-----------------------------------------------------------
+  api!
+  returns :code => 200, :additional_properties => true do
+    property :an_object, Hash do
+      property :a_number, Integer
+    end
+  end
+  def sub_object_invalid_extra_property
+    result =  {
+        an_object: {
+            a_number: 2,
+            an_extra_number: 3
+        }
+    }
+    render_with_validation :json => result
+  end
+
+
+  #-----------------------------------------------------------
+  # Sub-object in response has an extra property. 'additional_properties' is specified on the object, but not on the response
+  # (should not raise a validation error by default)
+  #-----------------------------------------------------------
+  api!
+  returns :code => 200, :additional_properties => false do
+    property :an_object, Hash, :additional_properties => true do
+      property :a_number, Integer
+    end
+  end
+  def sub_object_allowed_extra_property
+    result =  {
+        an_object: {
+            a_number: 2,
+            an_extra_number: 3
+        }
     }
     render_with_validation :json => result
   end
