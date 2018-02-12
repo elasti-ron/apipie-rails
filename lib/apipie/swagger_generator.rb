@@ -361,7 +361,7 @@ module Apipie
         }
       end
 
-      if response.additional_properties
+      if response.allow_additional_properties
         schema[:additionalProperties] = true
       end
 

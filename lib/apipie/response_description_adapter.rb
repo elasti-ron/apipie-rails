@@ -134,10 +134,11 @@ module Apipie
         Validator.new(@expected_type, options[:values], @sub_properties)
       end
     end
+  end
 
+  #======================================================================
 
-    #======================================================================
-
+  class ResponseDescriptionAdapter
 
     def self.from_self_describing_class(cls)
       adapter = ResponseDescriptionAdapter.new
@@ -153,6 +154,9 @@ module Apipie
 
     attr_accessor :additional_properties
 
+    def allow_additional_properties
+      additional_properties
+    end
 
     def to_json
       params_ordered.to_json
