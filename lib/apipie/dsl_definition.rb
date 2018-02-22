@@ -410,9 +410,9 @@ module Apipie
             adapter = ResponseDescriptionAdapter.from_self_describing_class(descriptor)
           else
             begin
-                block = Apipie.get_param_group(scope, descriptor) if descriptor
+              block = Apipie.get_param_group(scope, descriptor) if descriptor
             rescue
-                raise "No param_group or self-describing class named #{descriptor}"
+              raise "No param_group or self-describing class named #{descriptor}"
             end
           end
         elsif descriptor

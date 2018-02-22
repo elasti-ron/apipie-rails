@@ -1,45 +1,46 @@
 module Apipie
 
-  class ResponseObject
-    include Apipie::DSL::Base
-    include Apipie::DSL::Param
+  class ResponseDescription
+    class ResponseObject
+      include Apipie::DSL::Base
+      include Apipie::DSL::Param
 
-    def initialize(method_description, scope, block)
-      @method_description = method_description
-      @scope = scope
-      @param_group = {scope: scope}
+      def initialize(method_description, scope, block)
+        @method_description = method_description
+        @scope = scope
+        @param_group = {scope: scope}
 
-      self.instance_exec(&block) if block
+        self.instance_exec(&block) if block
 
-      prepare_hash_params
-    end
-
-    # this routine overrides Param#_default_param_group_scope and is called if Param#param_group is
-    # invoked during the instance_exec call in ResponseObject#initialize
-    def _default_param_group_scope
-      @scope
-    end
-
-    def name
-      "response #{@code} for #{@method_description.method}"
-    end
-
-    def params_ordered
-      @params_ordered ||= _apipie_dsl_data[:params].map do |args|
-        options = args.find { |arg| arg.is_a? Hash }
-        options[:param_group] = @param_group
-        Apipie::ParamDescription.from_dsl_data(@method_description, args)
+        prepare_hash_params
       end
-    end
 
-    def prepare_hash_params
-      @hash_params = params_ordered.reduce({}) do |h, param|
-        h.update(param.name.to_sym => param)
+      # this routine overrides Param#_default_param_group_scope and is called if Param#param_group is
+      # invoked during the instance_exec call in ResponseObject#initialize
+      def _default_param_group_scope
+        @scope
       end
-    end
 
+      def name
+        "response #{@code} for #{@method_description.method}"
+      end
+
+      def params_ordered
+        @params_ordered ||= _apipie_dsl_data[:params].map do |args|
+          options = args.find { |arg| arg.is_a? Hash }
+          options[:param_group] = @param_group
+          Apipie::ParamDescription.from_dsl_data(@method_description, args)
+        end
+      end
+
+      def prepare_hash_params
+        @hash_params = params_ordered.reduce({}) do |h, param|
+          h.update(param.name.to_sym => param)
+        end
+      end
+
+    end
   end
-
 
 
   class ResponseDescription

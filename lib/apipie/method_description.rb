@@ -48,9 +48,9 @@ module Apipie
 
       @metadata = dsl_data[:meta]
 
-      @params_ordered = dsl_data[:params].map { |args|
+      @params_ordered = dsl_data[:params].map do |args|
         Apipie::ParamDescription.from_dsl_data(self, args)
-      }.reject{|p| p.response_only? }
+      end.reject{|p| p.response_only? }
 
       @params_ordered = ParamDescription.unify(@params_ordered)
       @headers = dsl_data[:headers]

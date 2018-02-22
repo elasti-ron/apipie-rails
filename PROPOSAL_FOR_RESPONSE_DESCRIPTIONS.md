@@ -135,8 +135,8 @@ For example:
 ```ruby
 # entity defined using Grape::Entity
 class UserView < Grape::Entity
-    expose :id, documentation: {type: Integer, desc: "user id", required: true}
-    expose :name
+  expose :id, documentation: {type: Integer, desc: "user id", required: true}
+  expose :name
 end
 
 # API defined using Apipie
