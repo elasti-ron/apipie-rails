@@ -8,8 +8,12 @@ module Apipie
   # validator - Validator::BaseValidator subclass
   class ParamDescription
 
-    attr_reader :method_description, :name, :desc, :allow_nil, :allow_blank, :validator, :options, :metadata, :show, :as, :validations
+    attr_reader :method_description, :name, :desc, :allow_nil, :allow_blank, :validator, :options, :metadata, :show, :as, :validations, :response_only, :request_only
+    attr_reader :additional_properties
     attr_accessor :parent, :required
+
+    alias_method :response_only?, :response_only
+    alias_method :request_only?, :request_only
 
     def self.from_dsl_data(method_description, args)
       param_name, validator, desc_or_options, options, block = args
@@ -62,6 +66,10 @@ module Apipie
 
       @required = is_required?
 
+      @response_only = (@options[:only_in] == :response)
+      @request_only = (@options[:only_in] == :request)
+      raise ArgumentError.new("'#{@options[:only_in]}' is not a valid value for :only_in") if (!@response_only && !@request_only) && @options[:only_in].present?
+
       @show = if @options.has_key? :show
         @options[:show]
       else
@@ -79,6 +87,8 @@ module Apipie
       end
 
       @validations = Array(options[:validations]).map {|v| concern_subst(Apipie.markup_to_html(v)) }
+
+      @additional_properties = @options[:additional_properties]
     end
 
     def from_concern?
