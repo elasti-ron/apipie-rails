@@ -38,6 +38,23 @@ class PetWithMeasurements
   end
 end
 
+#
+# PetWithManyMeasurements is a self-describing class with an embedded object
+#
+class PetWithManyMeasurements
+  def self.describe_own_properties
+    [
+        Apipie::prop(:pet_name, 'string', {:description => 'Name of pet', :required => false}),
+        Apipie::prop(:many_pet_measurements, 'object', {is_array: true}, [
+            Apipie::prop(:weight, 'number', {:description => "Weight in pounds" }),
+            Apipie::prop(:height, 'number', {:description => "Height in inches" }),
+        ])
+    ]
+  end
+end
+
+
+
 class PetsUsingSelfDescribingClassesController < ApplicationController
   resource_description do
     description 'A controller to test "returns" using self-describing classes'
@@ -61,6 +78,16 @@ class PetsUsingSelfDescribingClassesController < ApplicationController
   param :id, String
   returns PetWithMeasurements, :desc => "measurements of the pet"
   def pets_with_measurements_described_as_class
+    render :plain => "all pets"
+  end
+
+  #-----------------------------------------------------------
+  # Method returning an array of PetWithManyMeasurements (a self-describing class with array field)
+  # -----------------------------------------------------------
+  api :GET, "/pets_with_many_measurements_as_class/:id", "Get the measurements of a single pet"
+  param :id, String
+  returns PetWithManyMeasurements, :desc => "measurements of the pet"
+  def pets_with_many_measurements_as_class
     render :plain => "all pets"
   end
 

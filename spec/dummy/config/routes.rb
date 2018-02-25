@@ -39,6 +39,8 @@ Dummy::Application.routes.draw do
       get "/pets/return_and_validate_expected_response_with_null" => "pets#return_and_validate_expected_response_with_null"
       get "/pets/return_and_validate_expected_response_with_null_object" => "pets#return_and_validate_expected_response_with_null_object"
 
+      get "/pets/returns_response_with_valid_array" => "pets#returns_response_with_valid_array"
+      get "/pets/returns_response_with_invalid_array" => "pets#returns_response_with_invalid_array"
     end
 
     apipie

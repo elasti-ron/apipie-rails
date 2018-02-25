@@ -544,6 +544,15 @@ module Apipie
           if param_desc.additional_properties
             schema[:additionalProperties] = true
           end
+
+          if param_desc.is_array?
+            new_schema = {
+                type: 'array',
+                items: schema
+            }
+            schema = new_schema
+          end
+
           if allow_nulls
             # ideally we would write schema[:type] = ["object", "null"]
             # but due to a bug in the json-schema gem, we need to use anyOf
