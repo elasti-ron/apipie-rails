@@ -71,7 +71,7 @@ describe Apipie::MethodDescription do
   describe "response-only properties" do
     before(:each) do
       @resource = Apipie::ResourceDescription.new(ApplicationController, "dummy")
-      dsl_data[:params] = [[:a, String, nil, {}, nil],
+      dsl_data[:params] = [[:a, String, nil, {:only_in => :request}, nil],
                            [:b, String, nil, {:only_in => :response}, nil],
                            [:c, String, nil, {}, nil]]
       @method = Apipie::MethodDescription.new(:a, @resource, dsl_data)
@@ -83,6 +83,7 @@ describe Apipie::MethodDescription do
       expect(@method.to_json[:params].map{|h| h[:name]}).to eq(['a', 'c'])
     end
   end
+
 
   describe "'returns' properties" do
     it "should raise an error if both :param_group and :array_of are specified in 'returns'" do

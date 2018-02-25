@@ -64,10 +64,12 @@ class PetsController < ApplicationController
   #
   # the param_group :pet_with_id has several parameters which are
   # not expectd in the request, but would show up in the response
+  # and vice versa
   #-----------------------------------------------------------
   def_param_group :pet_with_id do
     param :pet_id, Integer, :desc => "id of pet", :required => true
     param :pet_name, String, :desc => "Name of pet", :required => false, :only_in => :response
+    param :partial_match_allowed, [true, false], :desc => "Partial match allowed?", :required => false, :only_in => :request
     property :animal_type, ['dog','cat','iguana','kangaroo'], :desc => "Type of pet"   # this is implicitly :only_in => :response
   end
 
