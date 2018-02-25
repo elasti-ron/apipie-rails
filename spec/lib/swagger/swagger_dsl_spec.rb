@@ -188,6 +188,7 @@ describe "Swagger Responses" do
         expect(returns_obj.code).to eq(200)
         expect(returns_obj.is_array?).to eq(false)
 
+        # note that the response is expected NOT to return the parameters marked ':only_in => :request'
         expect(returns_obj).to match_field_structure([:pet_id, :pet_name, :animal_type])
       end
 
@@ -199,6 +200,7 @@ describe "Swagger Responses" do
         expect(schema).to have_field(:pet_id, 'number', {:description => 'id of pet'})
         expect(schema).to have_field(:pet_name, 'string', {:description => 'Name of pet', :required => false})
         expect(schema).to have_field(:animal_type, 'string', {:description => 'Type of pet', :enum => ['dog','cat','iguana','kangaroo']})
+        expect(schema).not_to have_field(:partial_match_allowed, 'boolean', {:required => false})
       end
 
       it "creates a swagger definition with all input parameters" do

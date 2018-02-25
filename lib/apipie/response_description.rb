@@ -32,8 +32,8 @@ module Apipie
         @params_ordered ||= _apipie_dsl_data[:params].map do |args|
           options = args.find { |arg| arg.is_a? Hash }
           options[:param_group] = @param_group
-          Apipie::ParamDescription.from_dsl_data(@method_description, args)
-        end
+          Apipie::ParamDescription.from_dsl_data(@method_description, args) unless options[:only_in] == :request
+        end.compact
       end
 
       def prepare_hash_params

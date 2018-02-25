@@ -76,7 +76,8 @@ path parameter).
 
 To allow reuse of the `param_group`, it would be useful to its definition to describe parameters that are not passed 
 in the request but are returned in the response.  This would be implementing by extending the DSL to 
-support a `:only_in => :response` option on `param` definitions.   
+support a `:only_in => :response` option on `param` definitions.  Similarly, params could be defined to be 
+`:only_in => :request` to indicate that they will not be included in the response.    
 
 For example:
 ```ruby
@@ -84,6 +85,7 @@ For example:
   def_param_group :user do
     param :user, Hash, :desc => "User info", :required => true, :action_aware => true do
       param :id, Integer, :only_in => :response
+      param :requested_id, Integer, :only_in => :request
       param_group :credentials
       param :membership, ["standard","premium"], :desc => "User membership", :allow_nil => false
     end
@@ -93,8 +95,6 @@ For example:
   returns :user, :desc => "the requested record"  # includes the :id field, because this is a response
   error :code => 404, :desc => "no user with the specified id"
 ```
-
-Note: if the need arises, it would be possible to extend this pattern to also support `:only_in => :request` params.
 
 
 #### Support `:array_of => <param_group-name>` in the `returns` keyword 
