@@ -136,6 +136,9 @@ class PetsController < ApplicationController
                                      # so create one manually
       param_group :pet_history
     end
+    property 'additional_histories', :array_of => Hash do
+      param_group :pet_history
+    end
   end
   returns :code => :unprocessable_entity, :desc => "Fleas were discovered on the pet" do
     param_group :pet
@@ -328,6 +331,56 @@ class PetsController < ApplicationController
             a_number: 2,
             an_extra_number: 3
         }
+    }
+    render :json => result
+  end
+
+
+  #=======================================================================
+  # Methods for testing array field responses
+  #=======================================================================
+
+  #-----------------------------------------------------------
+  # A method which returns the response as described (one field is an array of objects)
+  #-----------------------------------------------------------
+  api!
+  returns :code => 200 do
+    property :a_number, Integer
+    property :array_of_objects, :array_of => Hash do
+      property :number1, Integer, :required=>true
+      property :number2, Integer, :required=>true
+    end
+  end
+  def returns_response_with_valid_array
+    result =  {
+        a_number: 3,
+        array_of_objects: [
+            {number1: 1, number2: 2},
+            {number1: 10, number2: 20}
+        ]
+    }
+    render :json => result
+  end
+
+
+  #-----------------------------------------------------------
+  # A method which returns an incorrect response (wrong field type inside array)
+  #-----------------------------------------------------------
+  api!
+  returns :code => 200 do
+    property :a_number, Integer
+    property :array_of_objects, :array_of => Hash do
+      property :number1, Integer, :required=>true
+      property :number2, Integer, :required=>true
+    end
+  end
+  def returns_response_with_invalid_array
+    result =  {
+        a_number: 3,
+        array_of_objects: [
+            {number1: 1, number2: 2},
+            {number1: 10, number2: "this should have been a number"}
+        ]
     }
     render :json => result
   end

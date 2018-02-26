@@ -221,6 +221,7 @@ module Apipie
 
         methods[method_key] = {
             tags: [tag_name_for_resource(ruby_method.resource)] + warning_tags,
+            consumes: params_in_body? ? ['application/json'] : ['application/x-www-form-urlencoded', 'multipart/form-data'],
             operationId: op_id,
             summary: Apipie.app.translate(api.short_description, @current_lang),
             parameters: swagger_params_array_for_method(ruby_method, api.path),
@@ -544,6 +545,15 @@ module Apipie
           if param_desc.additional_properties
             schema[:additionalProperties] = true
           end
+
+          if param_desc.is_array?
+            new_schema = {
+                type: 'array',
+                items: schema
+            }
+            schema = new_schema
+          end
+
           if allow_nulls
             # ideally we would write schema[:type] = ["object", "null"]
             # but due to a bug in the json-schema gem, we need to use anyOf

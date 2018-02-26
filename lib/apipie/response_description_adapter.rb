@@ -94,6 +94,7 @@ module Apipie
         options[:desc] ||= options[:description]
         @description = options[:desc]
         @options = options
+        @is_array = options[:is_array] || false
         @sub_properties = []
         for prop in sub_properties do
           add_sub_property(prop)
@@ -122,6 +123,7 @@ module Apipie
             validator: validator,
             description: description,
             additional_properties: additional_properties,
+            is_array: is_array?,
             options: options
         }
       end
@@ -129,6 +131,10 @@ module Apipie
       attr_accessor :additional_properties
 
       alias_method :desc, :description
+
+      def is_array?
+        @is_array
+      end
 
       def validator
         Validator.new(@expected_type, options[:values], @sub_properties)

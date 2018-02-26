@@ -301,7 +301,8 @@ describe "Swagger Responses" do
         expect(returns_obj).to match_field_structure([:pet_name,
                                                       :animal_type,
                                                       {:pet_measurements => [:weight, :height,:num_legs]},
-                                                      {:pet_history => [:did_visit_vet, :avg_meals_per_day]}
+                                                      {:pet_history => [:did_visit_vet, :avg_meals_per_day]},
+                                                      {:additional_histories => [:did_visit_vet, :avg_meals_per_day]}
                                                      ])
       end
       it 'should have the 203 response described in the swagger' do
@@ -313,6 +314,7 @@ describe "Swagger Responses" do
         expect(schema).to have_field(:animal_type, 'string')
         expect(schema).to have_field(:pet_measurements, 'object')
         expect(schema).to have_field(:pet_history, 'object')
+        expect(schema).to have_field(:additional_histories, 'array')
 
         pm_schema = schema[:properties][:pet_measurements]
         expect(pm_schema).to have_field(:weight, 'number', {:description => "Weight in pounds"})
@@ -322,6 +324,12 @@ describe "Swagger Responses" do
         ph_schema = schema[:properties][:pet_history]
         expect(ph_schema).to have_field(:did_visit_vet, 'boolean')
         expect(ph_schema).to have_field(:avg_meals_per_day, 'number')
+
+        pa_schema = schema[:properties][:additional_histories]
+        expect(pa_schema[:type]).to eq('array')
+        pai_schema = schema[:properties][:additional_histories][:items]
+        expect(pai_schema).to have_field(:did_visit_vet, 'boolean')
+        expect(pai_schema).to have_field(:avg_meals_per_day, 'number')
       end
 
       it "should return code matching :unprocessable_entity (422) with spread out 'pet' and 'num_fleas'" do
@@ -421,6 +429,39 @@ describe "Swagger Responses" do
         expect(pm_schema).to have_field(:num_legs, 'number', {:description => "Number of legs", :required => false})
       end
     end
+
+    describe "PetsController#pets_with_many_measurements_as_class" do
+      subject do
+        desc._methods[:pets_with_many_measurements_as_class]
+      end
+
+      it "should return code 200 with pet_name (string) and many_pet_measurements (array of objects)" do
+        returns_obj = subject.returns.detect{|e| e.code == 200 }
+
+        puts returns_obj.to_json
+        expect(returns_obj.code).to eq(200)
+        expect(returns_obj.is_array?).to eq(false)
+
+        expect(returns_obj).to match_field_structure([:pet_name,
+                                                      {:many_pet_measurements => [:weight, :height]}
+                                                     ])
+      end
+
+
+      it 'should have the 200 response described in the swagger' do
+        response = swagger_response_for('/pets_with_many_measurements_as_class/{id}', 200)
+        expect(response[:description]).to eq('measurements of the pet')
+
+        schema = response[:schema]
+        expect(schema).to have_field(:pet_name, 'string', {:required => false})
+        expect(schema).to have_field(:many_pet_measurements, 'array')
+
+        pm_schema = schema[:properties][:many_pet_measurements][:items]
+        expect(pm_schema).to have_field(:weight, 'number', {:description => "Weight in pounds"})
+        expect(pm_schema).to have_field(:height, 'number', {:description => "Height in inches"})
+      end
+    end
+
   end
 
 

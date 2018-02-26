@@ -92,7 +92,8 @@ class ActionController::Base
       unprocessed_schema = Apipie::json_schema_for_method_response(controller_name, action_name, response.code, true)
 
       if unprocessed_schema.nil?
-        return [nil, [], RuntimeError.new("no schema defined for #{controller_name}##{action_name}[#{response.code}]")]
+        err = "no schema defined for #{controller_name}##{action_name}[#{response.code}]"
+        return [nil, [err], RuntimeError.new(err)]
       end
 
       schema = JSON.parse(JSON(unprocessed_schema))

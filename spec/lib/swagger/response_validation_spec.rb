@@ -2,6 +2,7 @@ require 'spec_helper'
 require 'rack/utils'
 require 'rspec/expectations'
 require 'apipie/rspec/response_validation_helper'
+require "json-schema"
 
 RSpec.describe PetsController, :type => :controller do
   before :each do
@@ -79,6 +80,20 @@ RSpec.describe PetsController, :type => :controller do
       expect { get :return_and_validate_type_mismatch, {format: :json} }.to raise_error(Apipie::ResponseDoesNotMatchSwaggerSchema)
     end
   end
+
+
+  describe "with array field" do
+    it "no error for valid response" do
+      response = get :returns_response_with_valid_array, {format: :json}
+      expect(response).to match_declared_responses
+    end
+
+    it "error if type of element in the array is wrong" do
+      response = get :returns_response_with_invalid_array, {format: :json}
+      expect(response).not_to match_declared_responses
+    end
+  end
+
 
 
 end
