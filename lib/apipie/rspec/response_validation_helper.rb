@@ -160,8 +160,8 @@ ActionController::TestCase::Behavior.instance_eval do
   # instrument the 'process' method in ActionController::TestCase to enable response validation
   module Apipie::ResponseValidationHelpers
     @is_response_validation_on = false
-    def process(*)
-      result = super
+    def process(*args)
+      result = super(*args)
       validate_response if @is_response_validation_on
 
       result
