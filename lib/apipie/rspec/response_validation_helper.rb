@@ -141,6 +141,8 @@ end
 #---------------------------------
 # Auto-validation logic
 #---------------------------------
+
+# for spec of type :controller (need to turn on view rendering for this to work)
 module RSpec::Rails::ViewRendering
   # Augment the RSpec DSL
   module ClassMethods
@@ -156,7 +158,25 @@ module RSpec::Rails::ViewRendering
   end
 end
 
+# for spec of type :request
+module RSpec::Rails::RequestExampleGroup
+  module ClassMethods
+    def auto_validate_rendered_views
+      before do
+        reset! unless integration_session
+        integration_session.instance_eval("@is_response_validation_on = true")
+      end
 
+      after do
+        integration_session.instance_eval("@is_response_validation_on = false")
+      end
+    end
+  end
+end
+
+
+
+# for :controller specs
 ActionController::TestCase::Behavior.instance_eval do
   # instrument the 'process' method in ActionController::TestCase to enable response validation
   module Apipie::ResponseValidationHelpers
@@ -175,6 +195,28 @@ ActionController::TestCase::Behavior.instance_eval do
 
   prepend Apipie::ResponseValidationHelpers
 end
+
+
+# for :request specs
+ActionDispatch::Integration::Session.instance_eval do
+  # instrument the 'process' method in ActionController::TestCase to enable response validation
+  module Apipie::ResponseValidationHelpers
+    @is_response_validation_on = false
+    def process(*args)
+      result = super(*args)
+      validate_response if @is_response_validation_on
+
+      result
+    end
+
+    def validate_response
+      controller.send(:validate_response_and_abort_with_info_if_errors)
+    end
+  end
+
+  prepend Apipie::ResponseValidationHelpers
+end
+
 
 
 class ActionController::Base
